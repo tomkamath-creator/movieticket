@@ -184,8 +184,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v4.0.0-pro-broadcast-edition
-          name: "CricStrike 3D v4.0.0 (Broadcast Replay System, Stadium Crowd & Flags, Audio Commentary & Celebrations)"
+          tag_name: v4.1.0-mobile-athlete-edition
+          name: "CricStrike 3D v4.1.0 (Realistic Athletic Player Models, Touch Controls & Zero-Tilt Upright Fix)"
           body: |
             ### CricStrike 3D - Pro Broadcast & International Stadium Edition (v4.0.0)
             100% Offline 3D Mobile Cricket Game inspired by "Real Cricket 3D" and "WCC3" built in Godot Engine 4.3.

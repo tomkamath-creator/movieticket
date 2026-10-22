@@ -35,16 +35,18 @@ var _idle_time: float = 0.0
 var anim_player: AnimationPlayer
 
 func _ready() -> void:
+	if humanoid_model == null:
+		humanoid_model = get_node_or_null("HumanoidModel")
+	if humanoid_model and humanoid_model.has_method("configure_role"):
+		humanoid_model.configure_role("batsman")
+		
 	_setup_character_animations()
+	
+	if bat_node == null:
+		bat_node = find_child("BatPivot", true, false)
 	if bat_node:
 		_bat_initial_rot = bat_node.rotation_degrees
 		_bat_initial_pos = bat_node.position
-	else:
-		var found_bat := find_child("Bat", true, false)
-		if found_bat and found_bat is Node3D:
-			bat_node = found_bat
-			_bat_initial_rot = bat_node.rotation_degrees
-			_bat_initial_pos = bat_node.position
 
 func _setup_character_animations() -> void:
 	if humanoid_model == null:
@@ -69,54 +71,33 @@ func _setup_character_animations() -> void:
 		if anim_player.has_animation_library(""):
 			anim_player.remove_animation_library("")
 		anim_player.add_animation_library("", anim_lib)
-		
-	if anim_player.has_animation("stance"):
-		anim_player.play("stance")
-		
-	# Attach bat to hand bone if available
-	if bat_node and bat_node.get_parent() != skel:
-		var hand_bone := skel.find_bone("mixamorig_RightHand")
-		if hand_bone >= 0:
-			var bone_attach = BoneAttachment3D.new()
-			bone_attach.bone_name = "mixamorig_RightHand"
-			skel.add_child(bone_attach)
-			bat_node.reparent(bone_attach)
-			bat_node.position = Vector3(0.04, -0.05, 0.08)
-			bat_node.rotation_degrees = Vector3(15.0, 45.0, -90.0)
-			_bat_initial_rot = bat_node.rotation_degrees
-			_bat_initial_pos = bat_node.position
+		if anim_player.has_animation("stance"):
+			anim_player.play("stance")
 
-func set_joystick_direction(input_vector: Vector2) -> void:
-	current_shot_direction = ShotLibrary.vector_to_direction(input_vector)
+func set_joystick_direction(dir_vector: Vector2) -> void:
+	current_shot_direction = ShotLibrary.vector_to_direction(dir_vector)
+
+func set_shot_direction(direction: GameConstants.ShotDirection) -> void:
+	current_shot_direction = direction
 
 func trigger_shot(elevation: GameConstants.ShotElevation) -> TimingEngine.TimingResult:
-	if is_swinging or is_celebrating:
+	if is_swinging:
 		return null
 		
 	var shot_data := ShotLibrary.get_shot(current_shot_direction, elevation)
 	_start_swing_animation(shot_data)
 	
-	var result: TimingEngine.TimingResult
-	if ball_ref and is_instance_valid(ball_ref) and ball_ref.is_active and not ball_ref.has_been_hit:
-		result = TimingEngine.evaluate_contact(
-			ball_ref.global_position,
-			ball_ref.linear_velocity,
-			strike_plane_z,
-			shot_data,
-			difficulty
-		)
-		
-		if result.rating != GameConstants.TimingRating.MISSED:
-			ball_ref.apply_bat_hit(result.exit_velocity)
-			shot_executed.emit(result)
-		else:
-			shot_missed.emit()
+	var ball_pos: Vector3 = ball_ref.global_position if ball_ref else Vector3(0.2, 0.5, 6.0)
+	var ball_vel: Vector3 = ball_ref.linear_velocity if ball_ref else Vector3(0.0, -1.0, 32.0)
+	
+	var result := TimingEngine.evaluate_shot(ball_pos, ball_vel, strike_plane_z, shot_data, difficulty)
+	
+	if result.is_contact and result.rating != GameConstants.TimingRating.MISSED:
+		shot_executed.emit(result)
+		if ball_ref:
+			var launch_dir := TimingEngine.calculate_exit_direction(shot_data.target_heading_deg, result.exit_launch_angle_deg)
+			ball_ref.apply_bat_hit(result.exit_speed_kmh, result.exit_launch_angle_deg, launch_dir)
 	else:
-		# Free swing without ball
-		result = TimingEngine.TimingResult.new()
-		result.shot_name = shot_data.name
-		result.rating = GameConstants.TimingRating.MISSED
-		result.feedback_text = "SWING"
 		shot_missed.emit()
 		
 	return result
@@ -125,16 +106,20 @@ func _start_swing_animation(shot_data: ShotLibrary.ShotData) -> void:
 	is_swinging = true
 	_swing_time = 0.0
 	
+	if humanoid_model and humanoid_model.has_method("play_anim"):
+		humanoid_model.play_anim("drive" if shot_data.elevation == GameConstants.ShotElevation.GROUNDED else "loft")
+		
 	if anim_player:
 		if shot_data.elevation == GameConstants.ShotElevation.LOFTED:
-			anim_player.play("pull")
-			anim_player.speed_scale = 1.6
+			if anim_player.has_animation("pull"):
+				anim_player.play("pull")
+				anim_player.speed_scale = 1.6
 		else:
-			anim_player.play("swing")
-			anim_player.speed_scale = 1.4
+			if anim_player.has_animation("swing"):
+				anim_player.play("swing")
+				anim_player.speed_scale = 1.4
 	
 	if bat_node:
-		# Dynamic bat swing rotation based on shot direction and elevation
 		var target_yaw := shot_data.bat_arc_angle_deg
 		var target_pitch := -45.0 if shot_data.elevation == GameConstants.ShotElevation.LOFTED else -15.0
 		
@@ -146,6 +131,8 @@ func _start_swing_animation(shot_data: ShotLibrary.ShotData) -> void:
 				tween.tween_property(bat_node, "rotation_degrees", _bat_initial_rot, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 				tween.finished.connect(func():
 					is_swinging = false
+					if humanoid_model and humanoid_model.has_method("play_anim"):
+						humanoid_model.play_anim("stance")
 					if anim_player and anim_player.has_animation("stance"):
 						anim_player.play("stance")
 						anim_player.speed_scale = 1.0
@@ -156,6 +143,8 @@ func _start_swing_animation(shot_data: ShotLibrary.ShotData) -> void:
 		if is_inside_tree() and get_tree() != null:
 			get_tree().create_timer(_swing_duration).timeout.connect(func():
 				is_swinging = false
+				if humanoid_model and humanoid_model.has_method("play_anim"):
+					humanoid_model.play_anim("stance")
 				if anim_player and anim_player.has_animation("stance"):
 					anim_player.play("stance")
 					anim_player.speed_scale = 1.0
@@ -169,7 +158,6 @@ func celebrate_bat_raise() -> void:
 	is_celebrating = true
 	celebration_started.emit()
 	
-	# Play standing ovation crowd acoustic
 	var audio := AudioManager.get_instance()
 	if audio:
 		audio.play_standing_ovation()
@@ -181,17 +169,14 @@ func celebrate_bat_raise() -> void:
 	if is_inside_tree() and bat_node:
 		var tween := create_tween()
 		if tween:
-			# Raise bat vertically high above head towards pavilion
 			tween.tween_property(bat_node, "rotation_degrees", Vector3(-130.0, 30.0, -15.0), 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 			tween.parallel().tween_property(bat_node, "position:y", _bat_initial_pos.y + 0.45, 0.45)
 			
 			if humanoid_model:
 				tween.parallel().tween_property(humanoid_model, "rotation_degrees:y", -35.0, 0.4)
 				
-			# Hold salute for 2 seconds
 			tween.tween_interval(2.0)
 			
-			# Lower bat back to batting stance
 			tween.tween_property(bat_node, "rotation_degrees", _bat_initial_rot, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 			tween.parallel().tween_property(bat_node, "position:y", _bat_initial_pos.y, 0.4)
 			if humanoid_model:
@@ -211,7 +196,10 @@ func reset_celebration() -> void:
 	celebration_ended.emit()
 
 func _process(delta: float) -> void:
-	# Subtle natural breathing & bat tapping idle cycle (Real Cricket / WCC2 stance)
+	# Enforce upright posture at all times
+	rotation.x = 0.0
+	rotation.z = 0.0
+	
 	if not is_swinging and not is_celebrating and bat_node:
 		_idle_time += delta * 4.5
 		var bat_tap: float = sin(_idle_time) * 4.0
@@ -219,7 +207,6 @@ func _process(delta: float) -> void:
 		if humanoid_model:
 			humanoid_model.position.y = (sin(_idle_time * 0.5) * 0.012)
 			
-	# Keyboard / Desktop fallback controls for testing
 	if Input.is_action_just_pressed("shot_grounded"):
 		trigger_shot(GameConstants.ShotElevation.GROUNDED)
 	elif Input.is_action_just_pressed("shot_lofted"):

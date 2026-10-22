@@ -88,6 +88,8 @@ func _setup_animations() -> void:
 func apply_profile(profile: PlayerProfile) -> void:
 	if profile == null:
 		return
+	if ty_model and ty_model.has_method("apply_profile"):
+		ty_model.apply_profile(profile)
 	if _upper_mat == null:
 		_setup_materials()
 		

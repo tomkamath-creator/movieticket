@@ -69,7 +69,8 @@ transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 14.5, 0, 8.8)
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.4, 0, -16.5)
 
 [node name="CricketBall" parent="." instance=ExtResource("4_ball")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 2.15, -9.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 0, -16.5)
+visible = false
 freeze = true
 
 [node name="PitchMarker" parent="." instance=ExtResource("8_marker")]

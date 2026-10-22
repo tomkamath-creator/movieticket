@@ -220,7 +220,7 @@ func _on_camera_button_pressed() -> void:
 
 func _on_camera_mode_changed(mode_name: String) -> void:
 	if camera_btn:
-		camera_btn.text = "Cam: %s" % mode_name
+		camera_btn.text = "🎥 CAM"
 	_update_pause_camera_btn_text()
 
 func _on_bowl_debug_pressed() -> void:

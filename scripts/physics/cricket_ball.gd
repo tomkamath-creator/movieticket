@@ -46,6 +46,8 @@ func _ready() -> void:
 	continuous_cd = true
 	contact_monitor = true
 	max_contacts_reported = 4
+	visible = false
+	freeze = true
 	
 	if pitch_conditions == null:
 		pitch_conditions = PitchConditions.new(GameConstants.PitchType.FLAT)
@@ -59,7 +61,7 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 
 func launch_delivery(start_pos: Vector3, target_pitch_pos: Vector3, speed_kmh: float, swing: float = 0.0, seam: float = 0.0, spin: Vector3 = Vector3.ZERO) -> void:
-	# Reset states
+	visible = true
 	global_position = start_pos
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
@@ -81,19 +83,15 @@ func launch_delivery(start_pos: Vector3, target_pitch_pos: Vector3, speed_kmh: f
 	var delta := target_pitch_pos - start_pos
 	var horizontal_dist := Vector2(delta.x, delta.z).length()
 	
-	# Time to reach pitch spot
 	var flight_time := horizontal_dist / speed_mps
 	if flight_time <= 0.05:
 		flight_time = 0.05
 		
-	# Trajectory with gravity compensation: delta.y = v_y * t - 0.5 * g * t^2
 	var v_y := (delta.y + 0.5 * GameConstants.GRAVITY * flight_time * flight_time) / flight_time
 	var v_horizontal := Vector2(delta.x, delta.z).normalized() * speed_mps
 	
 	linear_velocity = Vector3(v_horizontal.x, v_y, v_horizontal.y)
 	_last_velocity = linear_velocity
-	
-	# Initial ball backspin/seam wobble
 	angular_velocity = Vector3(-40.0, spin.y * 10.0, seam * 2.0)
 	
 	ball_delivered.emit(speed_kmh, target_pitch_pos)
@@ -117,11 +115,19 @@ func _physics_process(delta: float) -> void:
 	# Check boundaries
 	_check_boundary_distance()
 	
+	# Wicketkeeper takes the ball cleanly behind stumps
+	if not has_been_hit and global_position.z > 13.8 and is_active:
+		is_active = false
+		linear_velocity = Vector3.ZERO
+		freeze = true
+		ball_stopped.emit()
+		return
+	
 	# Check rest state
 	if has_pitched or has_been_hit:
-		if linear_velocity.length() < 0.2:
+		if linear_velocity.length() < 0.35:
 			_rest_timer += delta
-			if _rest_timer > 1.2:
+			if _rest_timer > 0.8:
 				is_active = false
 				ball_stopped.emit()
 		else:
@@ -133,19 +139,14 @@ func _apply_aerodynamics(_delta: float) -> void:
 	if speed < 1.0:
 		return
 		
-	# 1. Quadratic Air Drag
 	var frontal_area := PI * ball_radius * ball_radius
 	var drag_magnitude := 0.5 * GameConstants.AIR_DENSITY * GameConstants.DRAG_COEFFICIENT * frontal_area * (speed * speed)
 	var drag_force := -vel.normalized() * drag_magnitude
 	apply_central_force(drag_force)
 	
-	# 2. Aerodynamic Swing Force (Magnus / Asymmetric boundary layer)
 	if abs(swing_intensity) > 0.01:
-		# Swing acts horizontally perpendicular to the flight path (Z-X plane)
 		var flight_dir_2d := Vector2(vel.x, vel.z).normalized()
-		var lateral_normal := Vector3(-flight_dir_2d.y, 0.0, flight_dir_2d.x) # 90 deg horizontal normal
-		
-		# Swing scales with square of airspeed and atmospheric swing multiplier
+		var lateral_normal := Vector3(-flight_dir_2d.y, 0.0, flight_dir_2d.x)
 		var swing_accel := swing_intensity * (speed / 35.0) * 4.2 * pitch_conditions.swing_multiplier
 		var swing_force := lateral_normal * swing_accel * mass
 		apply_central_force(swing_force)
@@ -167,7 +168,6 @@ func _on_body_entered(body: Node) -> void:
 			has_pitched = true
 			pitch_point = global_position
 			
-			# Apply pitch condition bounce physics
 			var seam_rad := deg_to_rad(seam_tilt_deg)
 			var post_bounce_vel := pitch_conditions.calculate_pitch_bounce(_last_velocity, spin_vector, seam_rad)
 			linear_velocity = post_bounce_vel
@@ -178,28 +178,24 @@ func _on_body_entered(body: Node) -> void:
 			
 			ball_pitched.emit(pitch_point, GameConstants.mps_to_kmh(linear_velocity.length()))
 
-func apply_bat_hit(exit_velocity: Vector3) -> void:
+func apply_bat_hit(exit_speed_kmh: float, launch_angle_deg: float, launch_dir: Vector3) -> void:
 	has_been_hit = true
-	linear_velocity = exit_velocity
-	_last_velocity = exit_velocity
+	var exit_speed_mps := GameConstants.kmh_to_mps(exit_speed_kmh)
+	linear_velocity = launch_dir * exit_speed_mps
+	_last_velocity = linear_velocity
 	
-	var exit_speed_kmh := GameConstants.mps_to_kmh(exit_velocity.length())
-	var launch_angle_deg := rad_to_deg(atan2(exit_velocity.y, Vector2(exit_velocity.x, exit_velocity.z).length()))
-	
-	ball_hit.emit(exit_speed_kmh, launch_angle_deg, exit_velocity.normalized())
+	ball_hit.emit(exit_speed_kmh, launch_angle_deg, launch_dir)
 
 func _check_boundary_distance() -> void:
 	if not has_been_hit:
 		return
 		
-	# Stadium boundary is an ellipse
 	var norm_x := global_position.x / GameConstants.BOUNDARY_RADIUS_X
 	var norm_z := global_position.z / GameConstants.BOUNDARY_RADIUS_Z
 	var dist_ratio := (norm_x * norm_x) + (norm_z * norm_z)
 	
 	if dist_ratio >= 1.0 and is_active:
 		is_active = false
-		# Check if it was hit over boundary on the full (6) or bounced (4)
 		if has_pitched:
 			ball_boundary.emit(4)
 		else:
@@ -213,4 +209,5 @@ func reset_to_bowler_hand(bowler_hand_pos: Vector3) -> void:
 	is_active = false
 	has_pitched = false
 	has_been_hit = false
+	visible = false
 	trajectory_points.clear()

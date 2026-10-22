@@ -1,15 +1,7 @@
-[gd_scene load_steps=6 format=3 uid="uid://bowler001"]
+[gd_scene load_steps=4 format=3 uid="uid://bowler001"]
 
-[ext_resource type="PackedScene" path="res://assets/models/Ty.fbx" id="1_humanoid"]
+[ext_resource type="PackedScene" uid="uid://charactermodel001" path="res://scenes/character_model.tscn" id="1_humanoid"]
 [ext_resource type="Script" path="res://scripts/player/bowler_celebration.gd" id="2_celeb"]
-
-[sub_resource type="SphereMesh" id="Mesh_BallHand"]
-radius = 0.055
-height = 0.11
-
-[sub_resource type="StandardMaterial3D" id="Mat_RedBall"]
-albedo_color = Color(0.85, 0.15, 0.15, 1)
-roughness = 0.4
 
 [node name="Bowler" type="Node3D" node_paths=PackedStringArray("bowler_root", "bowling_arm_pivot")]
 script = ExtResource("2_celeb")
@@ -18,11 +10,7 @@ bowling_arm_pivot = NodePath("BowlingArmPivot")
 
 [node name="HumanoidModel" parent="." instance=ExtResource("1_humanoid")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+current_role = "bowler"
 
 [node name="BowlingArmPivot" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 1.35, 0)
-
-[node name="BallInHand" type="MeshInstance3D" parent="BowlingArmPivot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.45, 0)
-mesh = SubResource("Mesh_BallHand")
-surface_material_override/0 = SubResource("Mat_RedBall")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.26, 1.38, 0)

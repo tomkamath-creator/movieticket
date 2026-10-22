@@ -1,66 +1,127 @@
-[gd_scene load_steps=18 format=3 uid="uid://charactermodel001"]
+[gd_scene load_steps=32 format=3 uid="uid://charactermodel001"]
 
 [ext_resource type="Script" path="res://scripts/player/player_visuals.gd" id="1_vis"]
+[ext_resource type="Texture2D" uid="uid://battex001" path="res://assets/models/bat_willow_texture.png" id="2_battex"]
+[ext_resource type="Texture2D" uid="uid://padtex001" path="res://assets/models/pad_leather_texture.png" id="3_padtex"]
+[ext_resource type="Texture2D" uid="uid://jerseytex001" path="res://assets/models/jersey_pro_texture.png" id="4_jerseytex"]
 
-[sub_resource type="StandardMaterial3D" id="Mat_SkinDefault"]
+[sub_resource type="StandardMaterial3D" id="Mat_Skin"]
 albedo_color = Color(0.78, 0.58, 0.45, 1)
-roughness = 0.7
+roughness = 0.68
 
-[sub_resource type="StandardMaterial3D" id="Mat_JerseyDefault"]
-albedo_color = Color(0.12, 0.35, 0.85, 1)
+[sub_resource type="StandardMaterial3D" id="Mat_Jersey"]
+albedo_color = Color(0.08, 0.22, 0.52, 1)
+albedo_texture = ExtResource("4_jerseytex")
 roughness = 0.65
 
-[sub_resource type="CapsuleMesh" id="Mesh_Torso"]
-radius = 0.22
-height = 0.65
+[sub_resource type="StandardMaterial3D" id="Mat_Trousers"]
+albedo_color = Color(0.95, 0.95, 0.97, 1)
+roughness = 0.72
 
-[sub_resource type="SphereMesh" id="Mesh_Head"]
-radius = 0.14
-height = 0.28
+[sub_resource type="StandardMaterial3D" id="Mat_Pad"]
+albedo_color = Color(0.98, 0.98, 0.98, 1)
+albedo_texture = ExtResource("3_padtex")
+roughness = 0.55
 
-[sub_resource type="CylinderMesh" id="Mesh_Leg"]
-top_radius = 0.09
-bottom_radius = 0.07
-height = 0.7
+[sub_resource type="StandardMaterial3D" id="Mat_Helmet"]
+albedo_color = Color(0.06, 0.16, 0.38, 1)
+metallic = 0.25
+roughness = 0.38
 
-[sub_resource type="CylinderMesh" id="Mesh_Pad"]
-top_radius = 0.1
-bottom_radius = 0.08
-height = 0.62
-
-[sub_resource type="SphereMesh" id="Mesh_Hair"]
-radius = 0.145
-height = 0.22
+[sub_resource type="StandardMaterial3D" id="Mat_Grill"]
+albedo_color = Color(0.82, 0.84, 0.88, 1)
+metallic = 0.88
+roughness = 0.22
 
 [sub_resource type="StandardMaterial3D" id="Mat_Hair"]
 albedo_color = Color(0.12, 0.08, 0.06, 1)
 roughness = 0.9
 
+[sub_resource type="StandardMaterial3D" id="Mat_BatBlade"]
+albedo_color = Color(1, 1, 1, 1)
+albedo_texture = ExtResource("2_battex")
+roughness = 0.42
+
+[sub_resource type="StandardMaterial3D" id="Mat_Grip"]
+albedo_color = Color(0.85, 0.12, 0.12, 1)
+roughness = 0.82
+
+[sub_resource type="StandardMaterial3D" id="Mat_Spikes"]
+albedo_color = Color(0.94, 0.94, 0.96, 1)
+roughness = 0.4
+
+[sub_resource type="StandardMaterial3D" id="Mat_Ball"]
+albedo_color = Color(0.82, 0.12, 0.12, 1)
+roughness = 0.35
+
+[sub_resource type="BoxMesh" id="Mesh_TorsoChest"]
+size = Vector3(0.42, 0.45, 0.24)
+
+[sub_resource type="BoxMesh" id="Mesh_TorsoWaist"]
+size = Vector3(0.34, 0.26, 0.20)
+
+[sub_resource type="CylinderMesh" id="Mesh_Neck"]
+top_radius = 0.065
+bottom_radius = 0.075
+height = 0.12
+
+[sub_resource type="SphereMesh" id="Mesh_Head"]
+radius = 0.115
+height = 0.23
+
+[sub_resource type="SphereMesh" id="Mesh_Hair"]
+radius = 0.122
+height = 0.18
+
 [sub_resource type="BoxMesh" id="Mesh_Beard"]
-size = Vector3(0.18, 0.12, 0.16)
+size = Vector3(0.16, 0.10, 0.14)
 
 [sub_resource type="SphereMesh" id="Mesh_Helmet"]
-radius = 0.16
-height = 0.25
+radius = 0.138
+height = 0.23
+
+[sub_resource type="BoxMesh" id="Mesh_HelmetPeak"]
+size = Vector3(0.16, 0.02, 0.08)
 
 [sub_resource type="BoxMesh" id="Mesh_Grill"]
-size = Vector3(0.16, 0.08, 0.05)
+size = Vector3(0.15, 0.08, 0.05)
 
-[sub_resource type="StandardMaterial3D" id="Mat_Grill"]
-albedo_color = Color(0.8, 0.8, 0.85, 1)
-metallic = 0.85
-roughness = 0.2
+[sub_resource type="CapsuleMesh" id="Mesh_Shoulder"]
+radius = 0.06
+height = 0.16
+
+[sub_resource type="CapsuleMesh" id="Mesh_Arm"]
+radius = 0.052
+height = 0.28
+
+[sub_resource type="BoxMesh" id="Mesh_Glove"]
+size = Vector3(0.08, 0.12, 0.07)
+
+[sub_resource type="CapsuleMesh" id="Mesh_Thigh"]
+radius = 0.072
+height = 0.42
+
+[sub_resource type="CapsuleMesh" id="Mesh_Shin"]
+radius = 0.062
+height = 0.42
+
+[sub_resource type="BoxMesh" id="Mesh_Pad"]
+size = Vector3(0.14, 0.56, 0.08)
+
+[sub_resource type="BoxMesh" id="Mesh_Boot"]
+size = Vector3(0.11, 0.09, 0.24)
 
 [sub_resource type="BoxMesh" id="Mesh_BatBlade"]
-size = Vector3(0.11, 0.62, 0.04)
+size = Vector3(0.115, 0.65, 0.045)
 
 [sub_resource type="CylinderMesh" id="Mesh_Handle"]
 top_radius = 0.02
 bottom_radius = 0.02
-height = 0.22
+height = 0.25
 
-[sub_resource type="BoxMesh" id="Mesh_Sticker"]
-size = Vector3(0.09, 0.22, 0.042)
+[sub_resource type="SphereMesh" id="Mesh_Ball"]
+radius = 0.055
+height = 0.11
 
 [node name="CharacterModel" type="Node3D"]
 script = ExtResource("1_vis")
@@ -68,73 +129,178 @@ script = ExtResource("1_vis")
 [node name="Rig" type="Node3D" parent="."]
 
 [node name="Torso" type="MeshInstance3D" parent="Rig"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0)
-mesh = SubResource("Mesh_Torso")
-surface_material_override/0 = SubResource("Mat_JerseyDefault")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
+mesh = SubResource("Mesh_TorsoChest")
+surface_material_override/0 = SubResource("Mat_Jersey")
+
+[node name="Waist" type="MeshInstance3D" parent="Rig/Torso"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.32, 0)
+mesh = SubResource("Mesh_TorsoWaist")
+surface_material_override/0 = SubResource("Mat_Jersey")
 
 [node name="JerseyBackLabel" type="Label3D" parent="Rig/Torso"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.08, -0.225)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.05, -0.125)
 pixel_size = 0.002
-text = "SHARMA
+text = "R. SHARMA
 45"
-font_size = 38
+font_size = 36
 outline_size = 8
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="Neck" type="MeshInstance3D" parent="Rig"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.52, 0)
+mesh = SubResource("Mesh_Neck")
+surface_material_override/0 = SubResource("Mat_Skin")
+
 [node name="Head" type="MeshInstance3D" parent="Rig"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.66, 0)
 mesh = SubResource("Mesh_Head")
-surface_material_override/0 = SubResource("Mat_SkinDefault")
+surface_material_override/0 = SubResource("Mat_Skin")
 
 [node name="Hair" type="MeshInstance3D" parent="Rig/Head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, -0.02)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, -0.015)
 mesh = SubResource("Mesh_Hair")
 surface_material_override/0 = SubResource("Mat_Hair")
 
 [node name="Beard" type="MeshInstance3D" parent="Rig/Head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0.06)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, 0.05)
 mesh = SubResource("Mesh_Beard")
 surface_material_override/0 = SubResource("Mat_Hair")
 
 [node name="Helmet" type="MeshInstance3D" parent="Rig/Head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
 mesh = SubResource("Mesh_Helmet")
+surface_material_override/0 = SubResource("Mat_Helmet")
+
+[node name="Peak" type="MeshInstance3D" parent="Rig/Head/Helmet"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, -0.258819, 0, 0.258819, 0.965926, 0, 0.02, 0.12)
+mesh = SubResource("Mesh_HelmetPeak")
+surface_material_override/0 = SubResource("Mat_Helmet")
 
 [node name="Grill" type="MeshInstance3D" parent="Rig/Head/Helmet"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0.14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.07, 0.11)
 mesh = SubResource("Mesh_Grill")
 surface_material_override/0 = SubResource("Mat_Grill")
 
-[node name="LeftLeg" type="MeshInstance3D" parent="Rig"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.11, 0.45, 0)
-mesh = SubResource("Mesh_Leg")
+[node name="LeftShoulder" type="MeshInstance3D" parent="Rig"]
+transform = Transform3D(0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 0, 0, 1, -0.25, 1.40, 0)
+mesh = SubResource("Mesh_Shoulder")
+surface_material_override/0 = SubResource("Mat_Jersey")
 
-[node name="RightLeg" type="MeshInstance3D" parent="Rig"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.11, 0.45, 0)
-mesh = SubResource("Mesh_Leg")
+[node name="LeftUpperArm" type="Node3D" parent="Rig"]
+transform = Transform3D(0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0, 0, 1, -0.26, 1.38, 0)
 
-[node name="LeftPad" type="MeshInstance3D" parent="Rig"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.11, 0.42, 0.06)
+[node name="LeftArmMesh" type="MeshInstance3D" parent="Rig/LeftUpperArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
+mesh = SubResource("Mesh_Arm")
+surface_material_override/0 = SubResource("Mat_Jersey")
+
+[node name="LeftForearm" type="Node3D" parent="Rig/LeftUpperArm"]
+transform = Transform3D(0.965926, -0.258819, 0, 0.258819, 0.965926, 0, 0, 0, 1, 0, -0.28, 0.05)
+
+[node name="LeftForearmMesh" type="MeshInstance3D" parent="Rig/LeftUpperArm/LeftForearm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
+mesh = SubResource("Mesh_Arm")
+surface_material_override/0 = SubResource("Mat_Skin")
+
+[node name="LeftGlove" type="MeshInstance3D" parent="Rig/LeftUpperArm/LeftForearm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.28, 0)
+mesh = SubResource("Mesh_Glove")
+surface_material_override/0 = SubResource("Mat_Pad")
+
+[node name="RightShoulder" type="MeshInstance3D" parent="Rig"]
+transform = Transform3D(0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 0, 0, 1, 0.25, 1.40, 0)
+mesh = SubResource("Mesh_Shoulder")
+surface_material_override/0 = SubResource("Mat_Jersey")
+
+[node name="RightUpperArm" type="Node3D" parent="Rig"]
+transform = Transform3D(0.965926, -0.258819, 0, 0.258819, 0.965926, 0, 0, 0, 1, 0.26, 1.38, 0)
+
+[node name="RightArmMesh" type="MeshInstance3D" parent="Rig/RightUpperArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
+mesh = SubResource("Mesh_Arm")
+surface_material_override/0 = SubResource("Mat_Jersey")
+
+[node name="RightForearm" type="Node3D" parent="Rig/RightUpperArm"]
+transform = Transform3D(0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0, 0, 1, 0, -0.28, 0.05)
+
+[node name="RightForearmMesh" type="MeshInstance3D" parent="Rig/RightUpperArm/RightForearm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
+mesh = SubResource("Mesh_Arm")
+surface_material_override/0 = SubResource("Mat_Skin")
+
+[node name="RightGlove" type="MeshInstance3D" parent="Rig/RightUpperArm/RightForearm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.28, 0)
+mesh = SubResource("Mesh_Glove")
+surface_material_override/0 = SubResource("Mat_Pad")
+
+[node name="LeftThigh" type="Node3D" parent="Rig"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12, 0.88, 0)
+
+[node name="LeftLeg" type="MeshInstance3D" parent="Rig/LeftThigh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.20, 0)
+mesh = SubResource("Mesh_Thigh")
+surface_material_override/0 = SubResource("Mat_Trousers")
+
+[node name="LeftShin" type="MeshInstance3D" parent="Rig/LeftThigh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.56, 0)
+mesh = SubResource("Mesh_Shin")
+surface_material_override/0 = SubResource("Mat_Trousers")
+
+[node name="LeftPad" type="MeshInstance3D" parent="Rig/LeftThigh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.54, 0.05)
 mesh = SubResource("Mesh_Pad")
+surface_material_override/0 = SubResource("Mat_Pad")
 
-[node name="RightPad" type="MeshInstance3D" parent="Rig"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.11, 0.42, 0.06)
+[node name="LeftBoot" type="MeshInstance3D" parent="Rig/LeftThigh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.82, 0.04)
+mesh = SubResource("Mesh_Boot")
+surface_material_override/0 = SubResource("Mat_Spikes")
+
+[node name="RightThigh" type="Node3D" parent="Rig"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, 0.88, 0)
+
+[node name="RightLeg" type="MeshInstance3D" parent="Rig/RightThigh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.20, 0)
+mesh = SubResource("Mesh_Thigh")
+surface_material_override/0 = SubResource("Mat_Trousers")
+
+[node name="RightShin" type="MeshInstance3D" parent="Rig/RightThigh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.56, 0)
+mesh = SubResource("Mesh_Shin")
+surface_material_override/0 = SubResource("Mat_Trousers")
+
+[node name="RightPad" type="MeshInstance3D" parent="Rig/RightThigh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.54, 0.05)
 mesh = SubResource("Mesh_Pad")
+surface_material_override/0 = SubResource("Mat_Pad")
+
+[node name="RightBoot" type="MeshInstance3D" parent="Rig/RightThigh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.82, 0.04)
+mesh = SubResource("Mesh_Boot")
+surface_material_override/0 = SubResource("Mat_Spikes")
 
 [node name="BatPivot" type="Node3D" parent="Rig"]
-transform = Transform3D(0.965926, -0.258819, 0, 0.258819, 0.965926, 0, 0, 0, 1, 0.25, 0.75, 0.1)
+transform = Transform3D(0.965926, -0.258819, 0, 0.258819, 0.965926, 0, 0, 0, 1, 0.18, 0.78, 0.12)
 
 [node name="Bat" type="Node3D" parent="Rig/BatPivot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.32, 0)
 
 [node name="Blade" type="MeshInstance3D" parent="Rig/BatPivot/Bat"]
 mesh = SubResource("Mesh_BatBlade")
+surface_material_override/0 = SubResource("Mat_BatBlade")
 
 [node name="Handle" type="MeshInstance3D" parent="Rig/BatPivot/Bat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.44, 0)
 mesh = SubResource("Mesh_Handle")
+surface_material_override/0 = SubResource("Mat_Grip")
 
 [node name="Sticker" type="MeshInstance3D" parent="Rig/BatPivot/Bat"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0.002)
-mesh = SubResource("Mesh_Sticker")
+
+[node name="BallInHand" type="MeshInstance3D" parent="Rig"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.32, 0.88, 0.12)
+visible = false
+mesh = SubResource("Mesh_Ball")
+surface_material_override/0 = SubResource("Mat_Ball")

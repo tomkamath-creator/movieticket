@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://fielder001"]
 
 [ext_resource type="Script" path="res://scripts/fielding/fielder_controller.gd" id="1_fielder"]
-[ext_resource type="PackedScene" path="res://assets/models/Ty.fbx" id="2_humanoid"]
+[ext_resource type="PackedScene" uid="uid://charactermodel001" path="res://scenes/character_model.tscn" id="2_humanoid"]
 
 [node name="Fielder" type="Node3D"]
 script = ExtResource("1_fielder")
@@ -10,3 +10,4 @@ script = ExtResource("1_fielder")
 
 [node name="HumanoidModel" parent="MeshRoot" instance=ExtResource("2_humanoid")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+current_role = "fielder"

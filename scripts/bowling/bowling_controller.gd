@@ -154,6 +154,13 @@ func _start_runup() -> void:
 	if bowler_node:
 		bowler_node.global_position = bowler_start_runup_pos
 		bowler_node.visible = true
+		bowler_node.rotation.x = 0.0
+		bowler_node.rotation.z = 0.0
+		var hm := bowler_node.find_child("HumanoidModel", true, false)
+		if hm and hm.has_method("configure_role"):
+			hm.configure_role("bowler")
+		if hm and hm.has_method("play_anim"):
+			hm.play_anim("runup")
 		var ap := _get_or_create_anim_player()
 		if ap and ap.has_animation("runup"):
 			ap.play("runup")
@@ -170,9 +177,14 @@ func _physics_process(delta: float) -> void:
 		_runup_progress += delta / _runup_duration
 		
 		if bowler_node:
+			bowler_node.rotation.x = 0.0
+			bowler_node.rotation.z = 0.0
 			bowler_node.global_position = bowler_start_runup_pos.lerp(bowler_crease_pos, _runup_progress)
 			# Transition to delivery stride action in final phase of approach
 			if _runup_progress >= 0.7:
+				var hm := bowler_node.find_child("HumanoidModel", true, false)
+				if hm and hm.has_method("play_anim"):
+					hm.play_anim("bowl")
 				var ap := _get_or_create_anim_player()
 				if ap and ap.current_animation != "bowl" and ap.has_animation("bowl"):
 					ap.play("bowl")

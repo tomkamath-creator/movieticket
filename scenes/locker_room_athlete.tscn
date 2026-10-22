@@ -1,41 +1,13 @@
-[gd_scene load_steps=7 format=3 uid="uid://lockerathlete001"]
+[gd_scene load_steps=3 format=3 uid="uid://lockerathlete001"]
 
 [ext_resource type="Script" path="res://scripts/customization/locker_room_athlete.gd" id="1_script"]
-[ext_resource type="PackedScene" path="res://assets/models/Ty.fbx" id="2_ty"]
-
-[sub_resource type="BoxMesh" id="Mesh_BatBlade"]
-size = Vector3(0.11, 0.62, 0.04)
-
-[sub_resource type="StandardMaterial3D" id="Mat_BatBlade"]
-albedo_color = Color(0.88, 0.78, 0.55, 1)
-roughness = 0.45
-
-[sub_resource type="CylinderMesh" id="Mesh_Handle"]
-top_radius = 0.02
-bottom_radius = 0.02
-height = 0.22
-
-[sub_resource type="StandardMaterial3D" id="Mat_Grip"]
-albedo_color = Color(0.85, 0.15, 0.15, 1)
-roughness = 0.8
+[ext_resource type="PackedScene" uid="uid://charactermodel001" path="res://scenes/character_model.tscn" id="2_model"]
 
 [node name="LockerRoomAthlete" type="Node3D"]
 script = ExtResource("1_script")
 
-[node name="TyModel" parent="." instance=ExtResource("2_ty")]
+[node name="TyModel" parent="." instance=ExtResource("2_model")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="BatPivot" type="Node3D" parent="."]
-transform = Transform3D(0.965926, -0.258819, 0, 0.258819, 0.965926, 0, 0, 0, 1, 0.26, 0.82, 0.12)
-
-[node name="Bat" type="Node3D" parent="BatPivot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
-
-[node name="Blade" type="MeshInstance3D" parent="BatPivot/Bat"]
-mesh = SubResource("Mesh_BatBlade")
-surface_material_override/0 = SubResource("Mat_BatBlade")
-
-[node name="Handle" type="MeshInstance3D" parent="BatPivot/Bat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0)
-mesh = SubResource("Mesh_Handle")
-surface_material_override/0 = SubResource("Mat_Grip")
+transform = Transform3D(0.965926, -0.258819, 0, 0.258819, 0.965926, 0, 0, 0, 1, 0.18, 0.78, 0.12)

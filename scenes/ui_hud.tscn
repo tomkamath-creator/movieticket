@@ -41,10 +41,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -190.0
+offset_left = -220.0
 offset_top = -240.0
 offset_right = -30.0
-offset_bottom = -76.0
+offset_bottom = -68.0
 grow_horizontal = 0
 grow_vertical = 0
 
@@ -55,19 +55,19 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 14
 
 [node name="LoftedButton" type="Button" parent="BottomRightControls/VBoxContainer"]
-custom_minimum_size = Vector2(0, 68)
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "LOFTED (L)"
+theme_override_font_sizes/font_size = 22
+text = "🔥 LOFT"
 
 [node name="GroundedButton" type="Button" parent="BottomRightControls/VBoxContainer"]
-custom_minimum_size = Vector2(0, 68)
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "GROUNDED (Space)"
+theme_override_font_sizes/font_size = 22
+text = "⚡ DRIVE"
 
 [node name="TopCenter" type="VBoxContainer" parent="."]
 anchors_preset = 5
@@ -124,37 +124,45 @@ horizontal_alignment = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -580.0
-offset_top = 18.0
-offset_right = -18.0
-offset_bottom = 58.0
+offset_left = -170.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 60.0
 grow_horizontal = 0
-theme_override_constants/separation = 8
+theme_override_constants/separation = 10
 
 [node name="RoleButton" type="Button" parent="TopRightControls"]
+visible = false
 layout_mode = 2
 text = "Role: Batting"
 
 [node name="BowlDebugButton" type="Button" parent="TopRightControls"]
+visible = false
 layout_mode = 2
 text = "▶ BOWL NOW"
 
 [node name="PitchButton" type="Button" parent="TopRightControls"]
+visible = false
 layout_mode = 2
 text = "Pitch: Flat"
 
 [node name="DifficultyButton" type="Button" parent="TopRightControls"]
+visible = false
 layout_mode = 2
 text = "Diff: Medium"
 
 [node name="CameraButton" type="Button" parent="TopRightControls"]
+custom_minimum_size = Vector2(80, 42)
 layout_mode = 2
-text = "Cam (C)"
+theme_override_font_sizes/font_size = 15
+text = "🎥 CAM"
 
 [node name="PauseButton" type="Button" parent="TopRightControls"]
 process_mode = 3
+custom_minimum_size = Vector2(56, 42)
 layout_mode = 2
-text = "⏸ PAUSE"
+theme_override_font_sizes/font_size = 18
+text = "⏸"
 
 [node name="BowlerCardOverlay" parent="." instance=ExtResource("6_bcard")]
 visible = false

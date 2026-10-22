@@ -4,9 +4,17 @@ class_name UmpireController
 extends Node3D
 
 var anim_player: AnimationPlayer
+var _model: Node3D
 
 func _ready() -> void:
+	_model = find_child("HumanoidModel", true, false)
+	if _model and _model.has_method("configure_role"):
+		_model.configure_role("umpire")
 	_setup_anim_player()
+
+func _physics_process(_delta: float) -> void:
+	rotation.x = 0.0
+	rotation.z = 0.0
 
 func _setup_anim_player() -> void:
 	var players := find_children("", "AnimationPlayer", true, false)
@@ -29,12 +37,16 @@ func _setup_anim_player() -> void:
 			anim_player.play("stance")
 
 func signal_out() -> void:
+	if _model and _model.has_method("play_anim"):
+		_model.play_anim("umpire_out")
+		
 	if anim_player and anim_player.has_animation("umpire_out"):
 		anim_player.play("umpire_out")
 		anim_player.speed_scale = 1.0
-		# Return to stance after signal completes
 		var timer := get_tree().create_timer(3.0)
 		timer.timeout.connect(func():
+			if _model and _model.has_method("play_anim"):
+				_model.play_anim("stance")
 			if anim_player and anim_player.has_animation("stance"):
 				anim_player.play("stance")
 		)
