@@ -87,11 +87,12 @@ func _on_half_century_achieved(batsman_name: String, _runs: int, _balls: int) ->
 		stadium_builder.crowd_animator.trigger_cheer_surge(3.5, 4.0)
 		
 	# Auto-open wagon wheel milestone pop-up
-	var timer := get_tree().create_timer(2.4, true, false, true)
-	timer.timeout.connect(func():
-		if wagon_wheel_view and not wagon_wheel_view.visible:
-			wagon_wheel_view.open_wagon_wheel(scoreboard)
-	)
+	if is_inside_tree() and get_tree() != null:
+		var timer := get_tree().create_timer(2.4, true, false, true)
+		timer.timeout.connect(func():
+			if wagon_wheel_view and not wagon_wheel_view.visible:
+				wagon_wheel_view.open_wagon_wheel(scoreboard)
+		)
 
 func _on_over_completed(_over_number: int, _is_maiden: bool) -> void:
 	var comm := CommentaryManager.get_instance()
@@ -163,12 +164,15 @@ func _on_ball_boundary(runs: int) -> void:
 	elif broadcast_camera:
 		broadcast_camera.set_camera_mode(BroadcastCamera.CameraMode.BALL_TRACKING)
 		Engine.time_scale = 0.8
-		var slow_timer := get_tree().create_timer(1.8, true, false, true)
-		slow_timer.timeout.connect(func():
+		if is_inside_tree() and get_tree() != null:
+			var slow_timer := get_tree().create_timer(1.8, true, false, true)
+			slow_timer.timeout.connect(func():
+				Engine.time_scale = 1.0
+				if broadcast_camera:
+					broadcast_camera.set_camera_mode(BroadcastCamera.CameraMode.BEHIND_BATSMAN)
+			)
+		else:
 			Engine.time_scale = 1.0
-			if broadcast_camera:
-				broadcast_camera.set_camera_mode(BroadcastCamera.CameraMode.BEHIND_BATSMAN)
-		)
 	_reset_for_next_ball()
 
 func _on_stump_collision(_stump: Node, _speed: float) -> void:
@@ -236,12 +240,15 @@ func _trigger_wicket_cinematics(is_bowled: bool) -> void:
 	elif broadcast_camera:
 		broadcast_camera.set_camera_mode(BroadcastCamera.CameraMode.UMPIRE_POV)
 		Engine.time_scale = 0.75
-		var out_timer := get_tree().create_timer(2.4, true, false, true)
-		out_timer.timeout.connect(func():
+		if is_inside_tree() and get_tree() != null:
+			var out_timer := get_tree().create_timer(2.4, true, false, true)
+			out_timer.timeout.connect(func():
+				Engine.time_scale = 1.0
+				if broadcast_camera:
+					broadcast_camera.set_camera_mode(BroadcastCamera.CameraMode.BEHIND_BATSMAN)
+			)
+		else:
 			Engine.time_scale = 1.0
-			if broadcast_camera:
-				broadcast_camera.set_camera_mode(BroadcastCamera.CameraMode.BEHIND_BATSMAN)
-		)
 
 func _on_ball_fielded(f_name: String) -> void:
 	if _current_ball_resolved:

@@ -38,10 +38,11 @@ func _get_available_player() -> AudioStreamPlayer:
 	for p in _player_pool:
 		if not p.playing:
 			return p
-	return _player_pool[0]
+	return _player_pool[0] if _player_pool.size() > 0 else null
 
 func play_bat_crack(is_six: bool = false) -> void:
 	var player := _get_available_player()
+	if player == null: return
 	player.stream = sfx_bat_crack
 	player.pitch_scale = randf_range(0.95, 1.08)
 	player.volume_db = 2.0 if is_six else 0.0
@@ -51,6 +52,7 @@ func play_bat_crack(is_six: bool = false) -> void:
 
 func play_stump_rattle() -> void:
 	var player := _get_available_player()
+	if player == null: return
 	player.stream = sfx_stump_rattle
 	player.pitch_scale = randf_range(0.92, 1.05)
 	player.volume_db = 3.0
@@ -59,6 +61,7 @@ func play_stump_rattle() -> void:
 
 func play_ball_bounce() -> void:
 	var player := _get_available_player()
+	if player == null: return
 	player.stream = sfx_ball_bounce
 	player.pitch_scale = randf_range(0.90, 1.10)
 	player.volume_db = -2.0
@@ -66,6 +69,7 @@ func play_ball_bounce() -> void:
 
 func play_crowd_cheer(is_six: bool = false) -> void:
 	var player := _get_available_player()
+	if player == null: return
 	player.stream = sfx_crowd_cheer
 	player.pitch_scale = 1.05 if is_six else 0.95
 	player.volume_db = 1.0 if is_six else -3.0
@@ -73,6 +77,7 @@ func play_crowd_cheer(is_six: bool = false) -> void:
 
 func play_commentary_stinger() -> void:
 	var player := _get_available_player()
+	if player == null: return
 	player.stream = sfx_commentary_stinger
 	player.pitch_scale = randf_range(0.98, 1.02)
 	player.volume_db = 1.5
@@ -80,6 +85,7 @@ func play_commentary_stinger() -> void:
 
 func play_replay_whoosh() -> void:
 	var player := _get_available_player()
+	if player == null: return
 	player.stream = sfx_replay_whoosh
 	player.pitch_scale = randf_range(0.95, 1.05)
 	player.volume_db = 0.5
@@ -87,6 +93,7 @@ func play_replay_whoosh() -> void:
 
 func play_high_five() -> void:
 	var player := _get_available_player()
+	if player == null: return
 	player.stream = sfx_high_five
 	player.pitch_scale = randf_range(0.96, 1.04)
 	player.volume_db = 2.0
@@ -94,6 +101,7 @@ func play_high_five() -> void:
 
 func play_standing_ovation() -> void:
 	var player := _get_available_player()
+	if player == null: return
 	player.stream = sfx_standing_ovation
 	player.pitch_scale = 1.0
 	player.volume_db = 3.0

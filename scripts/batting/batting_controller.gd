@@ -138,23 +138,30 @@ func _start_swing_animation(shot_data: ShotLibrary.ShotData) -> void:
 		var target_yaw := shot_data.bat_arc_angle_deg
 		var target_pitch := -45.0 if shot_data.elevation == GameConstants.ShotElevation.LOFTED else -15.0
 		
-		var tween := create_tween()
-		tween.tween_property(bat_node, "rotation_degrees", Vector3(target_pitch, target_yaw, 30.0), 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		tween.tween_property(bat_node, "rotation_degrees", Vector3(20.0, target_yaw + 60.0, -40.0), 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-		tween.tween_property(bat_node, "rotation_degrees", _bat_initial_rot, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-		tween.finished.connect(func():
-			is_swinging = false
-			if anim_player and anim_player.has_animation("stance"):
-				anim_player.play("stance")
-				anim_player.speed_scale = 1.0
-		)
+		if is_inside_tree():
+			var tween := create_tween()
+			if tween:
+				tween.tween_property(bat_node, "rotation_degrees", Vector3(target_pitch, target_yaw, 30.0), 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+				tween.tween_property(bat_node, "rotation_degrees", Vector3(20.0, target_yaw + 60.0, -40.0), 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+				tween.tween_property(bat_node, "rotation_degrees", _bat_initial_rot, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+				tween.finished.connect(func():
+					is_swinging = false
+					if anim_player and anim_player.has_animation("stance"):
+						anim_player.play("stance")
+						anim_player.speed_scale = 1.0
+				)
+				return
+		is_swinging = false
 	else:
-		get_tree().create_timer(_swing_duration).timeout.connect(func():
+		if is_inside_tree() and get_tree() != null:
+			get_tree().create_timer(_swing_duration).timeout.connect(func():
+				is_swinging = false
+				if anim_player and anim_player.has_animation("stance"):
+					anim_player.play("stance")
+					anim_player.speed_scale = 1.0
+			)
+		else:
 			is_swinging = false
-			if anim_player and anim_player.has_animation("stance"):
-				anim_player.play("stance")
-				anim_player.speed_scale = 1.0
-		)
 
 func celebrate_bat_raise() -> void:
 	if is_celebrating:

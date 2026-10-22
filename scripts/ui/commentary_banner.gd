@@ -32,15 +32,18 @@ func show_commentary_line(line: String, event_name: String = "LIVE COMMENTARY", 
 	modulate.a = 0.0
 	set_process(true)
 	
-	_fade_tween = create_tween()
-	# Smooth fade and slide down
-	_fade_tween.tween_property(self, "modulate:a", 1.0, 0.25)
-	_fade_tween.tween_interval(3.6)
-	_fade_tween.tween_property(self, "modulate:a", 0.0, 0.4)
-	_fade_tween.finished.connect(func():
-		visible = false
-		set_process(false)
-	)
+	if is_inside_tree():
+		_fade_tween = create_tween()
+		if _fade_tween:
+			_fade_tween.tween_property(self, "modulate:a", 1.0, 0.25)
+			_fade_tween.tween_interval(3.6)
+			_fade_tween.tween_property(self, "modulate:a", 0.0, 0.4)
+			_fade_tween.finished.connect(func():
+				visible = false
+				set_process(false)
+			)
+	else:
+		modulate.a = 1.0
 
 func _process(delta: float) -> void:
 	if not visible:

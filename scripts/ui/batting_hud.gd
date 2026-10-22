@@ -202,13 +202,17 @@ func _show_timing_feedback(result: TimingEngine.TimingResult) -> void:
 	_start_fade_timer()
 
 func _start_fade_timer() -> void:
-	var tween := create_tween()
-	tween.tween_interval(1.2)
-	tween.tween_property(timing_banner, "modulate:a", 0.0, 0.4)
-	tween.finished.connect(func():
+	if is_inside_tree():
+		var tween := create_tween()
+		if tween:
+			tween.tween_interval(1.2)
+			tween.tween_property(timing_banner, "modulate:a", 0.0, 0.4)
+			tween.finished.connect(func():
+				timing_banner.visible = false
+				timing_banner.modulate.a = 1.0
+			)
+	else:
 		timing_banner.visible = false
-		timing_banner.modulate.a = 1.0
-	)
 
 func _on_camera_button_pressed() -> void:
 	if camera_controller:
