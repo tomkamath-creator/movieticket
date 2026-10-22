@@ -53,11 +53,11 @@ func run_all_tests() -> bool:
 
 	# Test Wicket Bowled & Caught
 	var bowled_line := comm.trigger_event(CommentaryManager.CommentaryEvent.WICKET_BOWLED)
-	if not _assert_true(not bowled_line.is_empty() and "bowled" in bowled_line.to_lower() or "timber" in bowled_line.to_lower() or "castled" in bowled_line.to_lower(), "WICKET_BOWLED line triggered"):
+	if not _assert_true(not bowled_line.is_empty() and received_event == "WICKET (BOWLED)", "WICKET_BOWLED line triggered and event tagged"):
 		passed = false
 		
 	var caught_line := comm.trigger_event(CommentaryManager.CommentaryEvent.WICKET_CAUGHT)
-	if not _assert_true(not caught_line.is_empty() and ("taken" in caught_line.to_lower() or "caught" in caught_line.to_lower()), "WICKET_CAUGHT line triggered"):
+	if not _assert_true(not caught_line.is_empty() and received_event == "WICKET (CAUGHT)", "WICKET_CAUGHT line triggered and event tagged"):
 		passed = false
 
 	# Test Half Century Milestone
