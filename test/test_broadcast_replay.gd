@@ -20,18 +20,25 @@ func run_all_tests() -> bool:
 		passed = false
 		
 	# 2. Start Broadcast Replay
-	var started_signal_received: bool = false
-	var received_title: String = ""
-	director.replay_started.connect(func(title: String, _detail: String):
-		started_signal_received = true
-		received_title = title
+	var state := {
+		"started": false,
+		"title": "",
+		"detail": "",
+		"angle_changed": false,
+		"angle_name": "",
+		"ended": false
+	}
+	director.replay_started.connect(func(title: String, detail: String):
+		state.started = true
+		state.title = title
+		state.detail = detail
 	)
 	
 	director.start_broadcast_replay("BOUNDARY 4!", "CRACKING SHOT")
 	
-	if not _assert_true(started_signal_received, "replay_started signal emitted on replay trigger"):
+	if not _assert_true(state.started, "replay_started signal emitted on replay trigger"):
 		passed = false
-	if not _assert_true(received_title == "BOUNDARY 4!", "Replay title matches event"):
+	if not _assert_true(state.title == "BOUNDARY 4!", "Replay title matches event"):
 		passed = false
 	if not _assert_true(director.is_replaying, "is_replaying is true during replay"):
 		passed = false
@@ -41,24 +48,21 @@ func run_all_tests() -> bool:
 		passed = false
 
 	# 3. Angle Transition Logic Check
-	var angle_changed_received: bool = false
-	var received_angle_name: String = ""
 	director.replay_angle_changed.connect(func(_idx: int, a_name: String):
-		angle_changed_received = true
-		received_angle_name = a_name
+		state.angle_changed = true
+		state.angle_name = a_name
 	)
 	director._apply_replay_angle(1)
-	if not _assert_true(angle_changed_received and received_angle_name == "Ultra Slow-Mo Impact Cam", "Angle changed to Ultra Slow-Mo Impact Cam"):
+	if not _assert_true(state.angle_changed and state.angle_name == "Ultra Slow-Mo Impact Cam", "Angle changed to Ultra Slow-Mo Impact Cam"):
 		passed = false
 
 	# 4. Skip Replay Functionality
-	var ended_signal_received: bool = false
 	director.replay_ended.connect(func():
-		ended_signal_received = true
+		state.ended = true
 	)
 	director.skip_replay()
 	
-	if not _assert_true(ended_signal_received, "replay_ended signal emitted on skip_replay()"):
+	if not _assert_true(state.ended, "replay_ended signal emitted on skip_replay()"):
 		passed = false
 	if not _assert_true(not director.is_replaying, "is_replaying reset to false on skip"):
 		passed = false

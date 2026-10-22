@@ -28,22 +28,24 @@ func run_all_tests() -> bool:
 	var comm := CommentaryManager.new()
 	comm._ready()
 	
-	var received_line: String = ""
-	var received_event: String = ""
-	var received_comm_name: String = ""
+	var comm_state := {
+		"line": "",
+		"event": "",
+		"comm_name": ""
+	}
 	comm.commentary_triggered.connect(func(l: String, ev: String, cn: String):
-		received_line = l
-		received_event = ev
-		received_comm_name = cn
+		comm_state.line = l
+		comm_state.event = ev
+		comm_state.comm_name = cn
 	)
 	
 	# Test Maximum Six Commentary Line
 	var six_line := comm.trigger_event(CommentaryManager.CommentaryEvent.MAXIMUM_SIX)
 	if not _assert_true(not six_line.is_empty(), "MAXIMUM_SIX line triggered: %s" % six_line):
 		passed = false
-	if not _assert_true(received_event == "MAXIMUM 6", "Event tagged as MAXIMUM 6"):
+	if not _assert_true(comm_state.event == "MAXIMUM 6", "Event tagged as MAXIMUM 6"):
 		passed = false
-	if not _assert_true(not received_comm_name.is_empty(), "Commentator name assigned: %s" % received_comm_name):
+	if not _assert_true(not comm_state.comm_name.is_empty(), "Commentator name assigned: %s" % comm_state.comm_name):
 		passed = false
 
 	# Test Boundary Four Commentary Line
@@ -53,11 +55,11 @@ func run_all_tests() -> bool:
 
 	# Test Wicket Bowled & Caught
 	var bowled_line := comm.trigger_event(CommentaryManager.CommentaryEvent.WICKET_BOWLED)
-	if not _assert_true(not bowled_line.is_empty() and received_event == "WICKET (BOWLED)", "WICKET_BOWLED line triggered and event tagged"):
+	if not _assert_true(not bowled_line.is_empty() and comm_state.event == "WICKET (BOWLED)", "WICKET_BOWLED line triggered and event tagged"):
 		passed = false
 		
 	var caught_line := comm.trigger_event(CommentaryManager.CommentaryEvent.WICKET_CAUGHT)
-	if not _assert_true(not caught_line.is_empty() and received_event == "WICKET (CAUGHT)", "WICKET_CAUGHT line triggered and event tagged"):
+	if not _assert_true(not caught_line.is_empty() and comm_state.event == "WICKET (CAUGHT)", "WICKET_CAUGHT line triggered and event tagged"):
 		passed = false
 
 	# Test Half Century Milestone

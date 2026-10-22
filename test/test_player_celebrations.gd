@@ -25,11 +25,11 @@ func run_all_tests() -> bool:
 	bowler_node.add_child(celebration)
 	celebration._ready()
 	
-	var bowler_celeb_started: bool = false
-	celebration.celebration_started.connect(func(): bowler_celeb_started = true)
+	var b_state := {"started": false}
+	celebration.celebration_started.connect(func(): b_state.started = true)
 	
 	celebration.trigger_wicket_celebration()
-	if not _assert_true(bowler_celeb_started, "Bowler celebration_started signal emitted on wicket"):
+	if not _assert_true(b_state.started, "Bowler celebration_started signal emitted on wicket"):
 		passed = false
 	if not _assert_true(celebration.is_celebrating, "Bowler is in celebrating state"):
 		passed = false
@@ -44,11 +44,11 @@ func run_all_tests() -> bool:
 	batsman.add_child(bat_pivot)
 	batsman._ready()
 	
-	var batsman_celeb_started: bool = false
-	batsman.celebration_started.connect(func(): batsman_celeb_started = true)
+	var bat_state := {"started": false}
+	batsman.celebration_started.connect(func(): bat_state.started = true)
 	
 	batsman.celebrate_bat_raise()
-	if not _assert_true(batsman_celeb_started, "Batsman celebration_started signal emitted on bat raise"):
+	if not _assert_true(bat_state.started, "Batsman celebration_started signal emitted on bat raise"):
 		passed = false
 	if not _assert_true(batsman.is_celebrating, "Batsman is in celebrating state"):
 		passed = false
@@ -58,11 +58,10 @@ func run_all_tests() -> bool:
 
 	# 3. Test Half-Century Milestone Emission in ScoreboardData
 	var sb := ScoreboardData.new(5, -1)
-	var fifty_emitted: bool = false
-	var fifty_runs: int = 0
+	var fifty_state := {"emitted": false, "runs": 0}
 	sb.half_century_achieved.connect(func(_name: String, runs: int, _balls: int):
-		fifty_emitted = true
-		fifty_runs = runs
+		fifty_state.emitted = true
+		fifty_state.runs = runs
 	)
 	
 	# Striker at 48 runs, scores a boundary 4 to cross 50
@@ -70,7 +69,7 @@ func run_all_tests() -> bool:
 	var four_call := UmpireRules.UmpireCall.new(UmpireRules.DecisionType.FOUR, 4, false, false, true, "FOUR!")
 	sb.record_delivery(four_call, 90.0, 65.0, false)
 	
-	if not _assert_true(fifty_emitted and fifty_runs >= 50, "half_century_achieved signal emitted on crossing 50 runs"):
+	if not _assert_true(fifty_state.emitted and fifty_state.runs >= 50, "half_century_achieved signal emitted on crossing 50 runs"):
 		passed = false
 
 	# 4. Test Bowler Card Overlay
