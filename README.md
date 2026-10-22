@@ -68,4 +68,4 @@ All 17 test suites (60+ assertions) are verified automatically on Ubuntu runners
 
 ## 📦 Download Direct Android APK
 Download the latest verified APK directly on your phone:
-👉 **[Download CricStrike 3D APK (GitHub Release)](https://github.com/tomkamath-creator/cricket/releases)**
+👉 **[Download CricStrike 3D APK (GitHub Release)](https://github.com/tomkamath-creator/new-crick/releases)**
