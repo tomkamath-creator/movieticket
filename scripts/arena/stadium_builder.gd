@@ -397,6 +397,7 @@ func _build_spectator_crowd_and_features() -> void:
 	crowd_animator.flags_root = flags_root
 	crowd_animator.flashlights_root = flashlights_root
 	add_child(crowd_animator)
+	crowd_animator._ready()
 
 func _build_jumbo_scoreboards() -> void:
 	var boards_node := Node3D.new()

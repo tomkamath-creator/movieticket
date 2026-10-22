@@ -26,7 +26,7 @@ var player_is_chasing: bool = true
 static var _instance: GameModeManager
 
 static func get_instance() -> GameModeManager:
-	if _instance == null:
+	if _instance == null or not is_instance_valid(_instance):
 		_instance = GameModeManager.new()
 	return _instance
 

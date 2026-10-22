@@ -82,6 +82,8 @@ func run_all_tests() -> bool:
 	banner.free()
 	comm.free()
 	audio.free()
+	AudioManager._instance = null
+	CommentaryManager._instance = null
 	return passed
 
 func _assert_true(condition: bool, message: String) -> bool:

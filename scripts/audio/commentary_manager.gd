@@ -81,7 +81,14 @@ var _lines_database: Dictionary = {
 }
 
 static func get_instance() -> CommentaryManager:
-	return _instance
+	if _instance != null and is_instance_valid(_instance):
+		return _instance
+	return null
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		if _instance == self:
+			_instance = null
 
 func _ready() -> void:
 	_instance = self

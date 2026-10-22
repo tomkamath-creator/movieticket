@@ -29,6 +29,7 @@ func _init() -> void:
 	]
 	
 	for path in test_paths:
+		print(">> Starting test suite: %s" % path)
 		var test_script = load(path)
 		if test_script == null:
 			printerr("Failed to load test script: %s" % path)
@@ -47,6 +48,7 @@ func _init() -> void:
 			
 		if not suite_ok:
 			all_passed = false
+		print(">> Finished test suite: %s (OK: %s)" % [path, suite_ok])
 		print("")
 
 	print("==================================================")

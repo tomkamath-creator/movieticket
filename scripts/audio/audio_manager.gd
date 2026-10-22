@@ -20,7 +20,14 @@ var _player_pool: Array[AudioStreamPlayer] = []
 var _pool_size: int = 8
 
 static func get_instance() -> AudioManager:
-	return _instance
+	if _instance != null and is_instance_valid(_instance):
+		return _instance
+	return null
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		if _instance == self:
+			_instance = null
 
 func _ready() -> void:
 	_instance = self
@@ -46,7 +53,8 @@ func play_bat_crack(is_six: bool = false) -> void:
 	player.stream = sfx_bat_crack
 	player.pitch_scale = randf_range(0.95, 1.08)
 	player.volume_db = 2.0 if is_six else 0.0
-	player.play()
+	if player.is_inside_tree():
+		player.play()
 	if is_six:
 		play_crowd_cheer(true)
 
@@ -56,7 +64,8 @@ func play_stump_rattle() -> void:
 	player.stream = sfx_stump_rattle
 	player.pitch_scale = randf_range(0.92, 1.05)
 	player.volume_db = 3.0
-	player.play()
+	if player.is_inside_tree():
+		player.play()
 	play_crowd_cheer(false)
 
 func play_ball_bounce() -> void:
@@ -65,7 +74,8 @@ func play_ball_bounce() -> void:
 	player.stream = sfx_ball_bounce
 	player.pitch_scale = randf_range(0.90, 1.10)
 	player.volume_db = -2.0
-	player.play()
+	if player.is_inside_tree():
+		player.play()
 
 func play_crowd_cheer(is_six: bool = false) -> void:
 	var player := _get_available_player()
@@ -73,7 +83,8 @@ func play_crowd_cheer(is_six: bool = false) -> void:
 	player.stream = sfx_crowd_cheer
 	player.pitch_scale = 1.05 if is_six else 0.95
 	player.volume_db = 1.0 if is_six else -3.0
-	player.play()
+	if player.is_inside_tree():
+		player.play()
 
 func play_commentary_stinger() -> void:
 	var player := _get_available_player()
@@ -81,7 +92,8 @@ func play_commentary_stinger() -> void:
 	player.stream = sfx_commentary_stinger
 	player.pitch_scale = randf_range(0.98, 1.02)
 	player.volume_db = 1.5
-	player.play()
+	if player.is_inside_tree():
+		player.play()
 
 func play_replay_whoosh() -> void:
 	var player := _get_available_player()
@@ -89,7 +101,8 @@ func play_replay_whoosh() -> void:
 	player.stream = sfx_replay_whoosh
 	player.pitch_scale = randf_range(0.95, 1.05)
 	player.volume_db = 0.5
-	player.play()
+	if player.is_inside_tree():
+		player.play()
 
 func play_high_five() -> void:
 	var player := _get_available_player()
@@ -97,7 +110,8 @@ func play_high_five() -> void:
 	player.stream = sfx_high_five
 	player.pitch_scale = randf_range(0.96, 1.04)
 	player.volume_db = 2.0
-	player.play()
+	if player.is_inside_tree():
+		player.play()
 
 func play_standing_ovation() -> void:
 	var player := _get_available_player()
@@ -105,7 +119,8 @@ func play_standing_ovation() -> void:
 	player.stream = sfx_standing_ovation
 	player.pitch_scale = 1.0
 	player.volume_db = 3.0
-	player.play()
+	if player.is_inside_tree():
+		player.play()
 
 func _generate_all_procedural_audio() -> void:
 	sfx_bat_crack = _create_bat_crack_stream()
