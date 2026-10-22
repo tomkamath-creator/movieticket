@@ -178,13 +178,15 @@ func _on_body_entered(body: Node) -> void:
 			
 			ball_pitched.emit(pitch_point, GameConstants.mps_to_kmh(linear_velocity.length()))
 
-func apply_bat_hit(exit_speed_kmh: float, launch_angle_deg: float, launch_dir: Vector3) -> void:
+func apply_bat_hit(exit_velocity: Vector3) -> void:
 	has_been_hit = true
-	var exit_speed_mps := GameConstants.kmh_to_mps(exit_speed_kmh)
-	linear_velocity = launch_dir * exit_speed_mps
-	_last_velocity = linear_velocity
+	linear_velocity = exit_velocity
+	_last_velocity = exit_velocity
 	
-	ball_hit.emit(exit_speed_kmh, launch_angle_deg, launch_dir)
+	var exit_speed_kmh := GameConstants.mps_to_kmh(exit_velocity.length())
+	var launch_angle_deg := rad_to_deg(atan2(exit_velocity.y, Vector2(exit_velocity.x, exit_velocity.z).length()))
+	
+	ball_hit.emit(exit_speed_kmh, launch_angle_deg, exit_velocity.normalized())
 
 func _check_boundary_distance() -> void:
 	if not has_been_hit:

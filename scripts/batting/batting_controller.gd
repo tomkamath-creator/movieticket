@@ -81,23 +81,33 @@ func set_shot_direction(direction: GameConstants.ShotDirection) -> void:
 	current_shot_direction = direction
 
 func trigger_shot(elevation: GameConstants.ShotElevation) -> TimingEngine.TimingResult:
-	if is_swinging:
+	if is_swinging or is_celebrating:
 		return null
 		
 	var shot_data := ShotLibrary.get_shot(current_shot_direction, elevation)
 	_start_swing_animation(shot_data)
 	
-	var ball_pos: Vector3 = ball_ref.global_position if ball_ref else Vector3(0.2, 0.5, 6.0)
-	var ball_vel: Vector3 = ball_ref.linear_velocity if ball_ref else Vector3(0.0, -1.0, 32.0)
-	
-	var result := TimingEngine.evaluate_shot(ball_pos, ball_vel, strike_plane_z, shot_data, difficulty)
-	
-	if result.is_contact and result.rating != GameConstants.TimingRating.MISSED:
-		shot_executed.emit(result)
-		if ball_ref:
-			var launch_dir := TimingEngine.calculate_exit_direction(shot_data.target_heading_deg, result.exit_launch_angle_deg)
-			ball_ref.apply_bat_hit(result.exit_speed_kmh, result.exit_launch_angle_deg, launch_dir)
+	var result: TimingEngine.TimingResult
+	if ball_ref and is_instance_valid(ball_ref) and ball_ref.is_active and not ball_ref.has_been_hit:
+		result = TimingEngine.evaluate_contact(
+			ball_ref.global_position,
+			ball_ref.linear_velocity,
+			strike_plane_z,
+			shot_data,
+			difficulty
+		)
+		
+		if result.rating != GameConstants.TimingRating.MISSED:
+			ball_ref.apply_bat_hit(result.exit_velocity)
+			shot_executed.emit(result)
+		else:
+			shot_missed.emit()
 	else:
+		# Free swing without ball
+		result = TimingEngine.TimingResult.new()
+		result.shot_name = shot_data.name
+		result.rating = GameConstants.TimingRating.MISSED
+		result.feedback_text = "SWING"
 		shot_missed.emit()
 		
 	return result
@@ -196,7 +206,6 @@ func reset_celebration() -> void:
 	celebration_ended.emit()
 
 func _process(delta: float) -> void:
-	# Enforce upright posture at all times
 	rotation.x = 0.0
 	rotation.z = 0.0
 	

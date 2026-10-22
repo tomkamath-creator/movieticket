@@ -1,4 +1,4 @@
-[gd_scene load_steps=32 format=3 uid="uid://charactermodel001"]
+[gd_scene load_steps=35 format=3 uid="uid://charactermodel001"]
 
 [ext_resource type="Script" path="res://scripts/player/player_visuals.gd" id="1_vis"]
 [ext_resource type="Texture2D" uid="uid://battex001" path="res://assets/models/bat_willow_texture.png" id="2_battex"]
@@ -304,3 +304,5 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.32, 0.88, 0.12)
 visible = false
 mesh = SubResource("Mesh_Ball")
 surface_material_override/0 = SubResource("Mat_Ball")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
