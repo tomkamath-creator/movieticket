@@ -63,6 +63,12 @@ func trigger_wicket_celebration() -> void:
 				celebration_ended.emit()
 			)
 			return
-			
+
+func reset_celebration() -> void:
 	is_celebrating = false
+	if bowler_root:
+		bowler_root.position = _initial_pos
+		bowler_root.rotation_degrees = _initial_rot
+	if bowling_arm_pivot:
+		bowling_arm_pivot.rotation_degrees = Vector3.ZERO
 	celebration_ended.emit()

@@ -12,6 +12,7 @@ var excitement_level: float = 1.0 # 1.0 normal, 2.5 on boundary/wicket
 var target_excitement: float = 1.0
 
 var _crowd_nodes: Array[Node3D] = []
+var _crowd_initial_y: Array[float] = []
 var _flag_nodes: Array[Node3D] = []
 var _flashlight_nodes: Array[Node3D] = []
 var _flashlight_phases: Array[float] = []
@@ -21,6 +22,7 @@ func _ready() -> void:
 		for child in crowd_root.get_children():
 			if child is Node3D:
 				_crowd_nodes.append(child as Node3D)
+				_crowd_initial_y.append(child.position.y)
 				
 	if flags_root:
 		for child in flags_root.get_children():
@@ -55,7 +57,8 @@ func _process(delta: float) -> void:
 		# Traveling wave + bouncing jump
 		var wave: float = sin(_anim_time * 3.5 - angle_phase)
 		var jump: float = maxf(0.0, wave) * 0.28 * excitement_level
-		node.position.y = jump
+		var base_y: float = _crowd_initial_y[i] if i < _crowd_initial_y.size() else 0.0
+		node.position.y = base_y + jump
 		# Slight excited sway
 		node.rotation_degrees.z = sin(_anim_time * 4.0 + angle_phase) * 6.0 * excitement_level
 

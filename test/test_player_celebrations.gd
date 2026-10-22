@@ -33,6 +33,9 @@ func run_all_tests() -> bool:
 		passed = false
 	if not _assert_true(celebration.is_celebrating, "Bowler is in celebrating state"):
 		passed = false
+	celebration.reset_celebration()
+	if not _assert_true(not celebration.is_celebrating, "Bowler celebration reset to idle"):
+		passed = false
 
 	# 2. Test Batsman Bat-Raise Celebration
 	var batsman := BattingController.new()
@@ -48,6 +51,9 @@ func run_all_tests() -> bool:
 	if not _assert_true(batsman_celeb_started, "Batsman celebration_started signal emitted on bat raise"):
 		passed = false
 	if not _assert_true(batsman.is_celebrating, "Batsman is in celebrating state"):
+		passed = false
+	batsman.reset_celebration()
+	if not _assert_true(not batsman.is_celebrating, "Batsman celebration reset to batting stance"):
 		passed = false
 
 	# 3. Test Half-Century Milestone Emission in ScoreboardData

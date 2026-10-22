@@ -202,8 +202,12 @@ func celebrate_bat_raise() -> void:
 				celebration_ended.emit()
 			)
 			return
-			
+
+func reset_celebration() -> void:
 	is_celebrating = false
+	if bat_node:
+		bat_node.position = _bat_initial_pos
+		bat_node.rotation_degrees = _bat_initial_rot
 	celebration_ended.emit()
 
 func _process(delta: float) -> void:
