@@ -60,8 +60,8 @@ jobs:
         if: always()
         run: |
           if [ -f test_output.log ]; then
-            grep -E "(FAIL|ERROR|error|SCRIPT ERROR|Starting test|Finished test)" test_output.log | while IFS= read -r line; do
-              echo "::error::$line"
+            grep -E "(\[FAIL\]|SCRIPT ERROR|Failed to load)" test_output.log | while IFS= read -r line; do
+              echo "::error title=Assertion Failure::$line"
             done
           fi
 
