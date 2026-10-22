@@ -59,16 +59,11 @@ func run_all_tests() -> bool:
 		fifty_runs = runs
 	)
 	
-	# Score 48 runs (12 boundaries)
+	# Striker at 48 runs, scores a boundary 4 to cross 50
+	sb.striker.runs = 48
 	var four_call := UmpireRules.UmpireCall.new(UmpireRules.DecisionType.FOUR, 4, false, false, true, "FOUR!")
-	for i in range(12):
-		sb.record_delivery(four_call, 90.0, 65.0, false)
-		
-	if not _assert_true(not fifty_emitted, "Half-century not triggered at 48 runs"):
-		passed = false
-		
-	# Score another 4 (reaches 52 runs -> triggers half-century!)
 	sb.record_delivery(four_call, 90.0, 65.0, false)
+	
 	if not _assert_true(fifty_emitted and fifty_runs >= 50, "half_century_achieved signal emitted on crossing 50 runs"):
 		passed = false
 

@@ -35,10 +35,11 @@ func _ready() -> void:
 
 func trigger_cheer_surge(intensity: float = 2.5, duration: float = 3.0) -> void:
 	target_excitement = intensity
-	var cheer_timer := get_tree().create_timer(duration, true, false, true)
-	cheer_timer.timeout.connect(func():
-		target_excitement = 1.0
-	)
+	if is_inside_tree() and get_tree() != null:
+		var cheer_timer := get_tree().create_timer(duration, true, false, true)
+		cheer_timer.timeout.connect(func():
+			target_excitement = 1.0
+		)
 
 func _process(delta: float) -> void:
 	_anim_time += delta

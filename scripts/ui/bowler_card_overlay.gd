@@ -26,16 +26,20 @@ func show_bowler_card(bowler_name: String, bowling_style: String, figures_str: S
 	visible = true
 	position.x = -360.0
 	
-	_slide_tween = create_tween()
-	# Slide in from left
-	_slide_tween.tween_property(self, "position:x", 24.0, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_slide_tween.tween_interval(display_sec)
-	# Slide out to left
-	_slide_tween.tween_property(self, "position:x", -360.0, 0.3).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	_slide_tween.finished.connect(func():
-		visible = false
-		card_dismissed.emit()
-	)
+	if is_inside_tree():
+		_slide_tween = create_tween()
+		if _slide_tween:
+			# Slide in from left
+			_slide_tween.tween_property(self, "position:x", 24.0, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			_slide_tween.tween_interval(display_sec)
+			# Slide out to left
+			_slide_tween.tween_property(self, "position:x", -360.0, 0.3).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+			_slide_tween.finished.connect(func():
+				visible = false
+				card_dismissed.emit()
+			)
+	else:
+		position.x = 24.0
 
 func hide_immediate() -> void:
 	if _slide_tween and _slide_tween.is_valid():

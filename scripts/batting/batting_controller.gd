@@ -171,33 +171,33 @@ func celebrate_bat_raise() -> void:
 	if comm:
 		comm.trigger_event(CommentaryManager.CommentaryEvent.HALF_CENTURY)
 		
-	if bat_node:
+	if is_inside_tree() and bat_node:
 		var tween := create_tween()
-		# Raise bat vertically high above head towards pavilion
-		tween.tween_property(bat_node, "rotation_degrees", Vector3(-130.0, 30.0, -15.0), 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tween.parallel().tween_property(bat_node, "position:y", _bat_initial_pos.y + 0.45, 0.45)
-		
-		if humanoid_model:
-			tween.parallel().tween_property(humanoid_model, "rotation_degrees:y", -35.0, 0.4)
+		if tween:
+			# Raise bat vertically high above head towards pavilion
+			tween.tween_property(bat_node, "rotation_degrees", Vector3(-130.0, 30.0, -15.0), 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			tween.parallel().tween_property(bat_node, "position:y", _bat_initial_pos.y + 0.45, 0.45)
 			
-		# Hold salute for 2 seconds
-		tween.tween_interval(2.0)
-		
-		# Lower bat back to batting stance
-		tween.tween_property(bat_node, "rotation_degrees", _bat_initial_rot, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-		tween.parallel().tween_property(bat_node, "position:y", _bat_initial_pos.y, 0.4)
-		if humanoid_model:
-			tween.parallel().tween_property(humanoid_model, "rotation_degrees:y", 0.0, 0.4)
+			if humanoid_model:
+				tween.parallel().tween_property(humanoid_model, "rotation_degrees:y", -35.0, 0.4)
+				
+			# Hold salute for 2 seconds
+			tween.tween_interval(2.0)
 			
-		tween.finished.connect(func():
-			is_celebrating = false
-			celebration_ended.emit()
-		)
-	else:
-		get_tree().create_timer(2.4).timeout.connect(func():
-			is_celebrating = false
-			celebration_ended.emit()
-		)
+			# Lower bat back to batting stance
+			tween.tween_property(bat_node, "rotation_degrees", _bat_initial_rot, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			tween.parallel().tween_property(bat_node, "position:y", _bat_initial_pos.y, 0.4)
+			if humanoid_model:
+				tween.parallel().tween_property(humanoid_model, "rotation_degrees:y", 0.0, 0.4)
+				
+			tween.finished.connect(func():
+				is_celebrating = false
+				celebration_ended.emit()
+			)
+			return
+			
+	is_celebrating = false
+	celebration_ended.emit()
 
 func _process(delta: float) -> void:
 	# Subtle natural breathing & bat tapping idle cycle (Real Cricket / WCC2 stance)

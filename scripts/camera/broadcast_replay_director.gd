@@ -104,7 +104,10 @@ func _apply_replay_angle(index: int) -> void:
 	if camera:
 		camera.global_position = angle_data.pos
 		camera.fov = angle_data.fov
-		camera.look_at(angle_data.look, Vector3.UP)
+		var dir: Vector3 = (angle_data.look - angle_data.pos).normalized()
+		if dir.length() > 0.01:
+			camera.transform = Transform3D().looking_at(dir, Vector3.UP)
+			camera.global_position = angle_data.pos
 
 func _process(delta: float) -> void:
 	if not is_replaying:
@@ -129,8 +132,12 @@ func _process(delta: float) -> void:
 	if camera and current_angle_index < _replay_angles.size():
 		var angle_data: Dictionary = _replay_angles[current_angle_index]
 		var drift_offset := Vector3(sin(replay_elapsed * 2.0) * 0.15, 0.0, 0.0)
-		camera.global_position = angle_data.pos + drift_offset
-		camera.look_at(angle_data.look, Vector3.UP)
+		var cam_pos: Vector3 = angle_data.pos + drift_offset
+		camera.global_position = cam_pos
+		var dir: Vector3 = (angle_data.look - cam_pos).normalized()
+		if dir.length() > 0.01:
+			camera.transform = Transform3D().looking_at(dir, Vector3.UP)
+			camera.global_position = cam_pos
 		
 	if replay_elapsed >= total_replay_duration:
 		_terminate_replay()

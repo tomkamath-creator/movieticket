@@ -305,9 +305,10 @@ func _build_spectator_crowd_and_features() -> void:
 			
 			var c_pos := Vector3(cos(angle) * tier_radius, tier_height, sin(angle) * tier_radius)
 			spectator.position = c_pos
-			# Turn spectator to look toward the pitch center
-			spectator.look_at(Vector3(0.0, 1.0, 0.0), Vector3.UP)
-			spectator.position = c_pos
+			var to_center := (Vector3(0.0, 1.0, 0.0) - c_pos).normalized()
+			if to_center.length() > 0.01:
+				spectator.transform = Transform3D().looking_at(to_center, Vector3.UP)
+				spectator.position = c_pos
 			crowd_root.add_child(spectator)
 
 	# 2. Populate Waving Team Flags along upper tier perimeter
@@ -329,8 +330,12 @@ func _build_spectator_crowd_and_features() -> void:
 		var f_height := 16.0
 		
 		var flag_holder := Node3D.new()
-		flag_holder.position = Vector3(cos(f_angle) * f_radius, f_height, sin(f_angle) * f_radius)
-		flag_holder.look_at(Vector3(0.0, f_height, 0.0), Vector3.UP)
+		var f_pos := Vector3(cos(f_angle) * f_radius, f_height, sin(f_angle) * f_radius)
+		flag_holder.position = f_pos
+		var to_fcenter := (Vector3(0.0, f_height, 0.0) - f_pos).normalized()
+		if to_fcenter.length() > 0.01:
+			flag_holder.transform = Transform3D().looking_at(to_fcenter, Vector3.UP)
+			flag_holder.position = f_pos
 		
 		# Flagpole
 		var pole := MeshInstance3D.new()
