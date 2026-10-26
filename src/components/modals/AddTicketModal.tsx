@@ -7,16 +7,14 @@ import confetti from 'canvas-confetti';
 import {
   X,
   Upload,
-  Sparkles,
   Calendar,
   MapPin,
   Armchair,
-  Film,
   Search,
-  CheckCircle2,
   Clock,
   Coins,
   Ticket as TicketIcon,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 interface AddTicketModalProps {
@@ -102,7 +100,6 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
   const handleFile = async (file: File) => {
     setSelectedFile(file);
 
-    // Convert file to Base64 Data URL for persistent storage in IndexedDB
     const reader = new FileReader();
     reader.onload = async (e) => {
       const dataUrl = e.target?.result as string;
@@ -122,8 +119,8 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
   // Run in-browser OCR + Movie Lookup
   const startOcrScan = async (dataUrl: string, fileName: string) => {
     setStep('scanning');
-    setScanProgress(0.1);
-    setScanStatus('Reading ticket screenshot in browser...');
+    setScanProgress(0.15);
+    setScanStatus('Scanning ticket stub...');
 
     try {
       // 1. In-browser OCR
@@ -145,7 +142,7 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
       if (extracted.ticketPrice) setTicketPrice(extracted.ticketPrice);
 
       // 2. Movie Details Lookup
-      setScanStatus(`Searching official movie details for "${candidateTitle}"...`);
+      setScanStatus('Matching official movie artwork...');
       setScanProgress(0.85);
 
       if (candidateTitle) {
@@ -160,10 +157,10 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
       }
 
       setScanProgress(1.0);
-      setScanStatus('Complete! Review your ticket stub.');
+      setScanStatus('Done');
       setTimeout(() => {
         setStep('verify');
-      }, 500);
+      }, 400);
     } catch (err) {
       console.error('Scan error:', err);
       setStep('verify');
@@ -214,10 +211,10 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       title: title.trim(),
-      year: year || new Date(dateWatched).getFullYear().toString(),
+      year: year || new Date().getFullYear().toString(),
       releaseDate: '',
       director: director.trim(),
-      genres: genres.length > 0 ? genres : ['Cinema'],
+      genres: genres.length > 0 ? genres : ['Feature Film'],
       runtime: runtime || '120 min',
       synopsis: synopsis.trim(),
       posterUrl: posterUrl || generateFallbackPosterSvg(title),
@@ -239,13 +236,12 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
 
     await onSaveTicket(newTicket);
 
-    // Trigger celebratory golden confetti
     try {
       confetti({
-        particleCount: 80,
-        spread: 70,
+        particleCount: 70,
+        spread: 60,
         origin: { y: 0.6 },
-        colors: ['#f59e0b', '#fbbf24', '#fef08a', '#ffffff'],
+        colors: ['#f59e0b', '#fbbf24', '#fef08a'],
       });
     } catch {
       // ignore
@@ -255,8 +251,8 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl max-h-[92vh] bg-[#0f111a] border border-amber-500/35 rounded-2xl shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_50px_rgba(245,158,11,0.15)] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md">
+      <div className="relative w-full max-w-4xl max-h-[92vh] bg-[#0f111a] border border-amber-500/30 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
         {/* Modal Top Bar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-[#141724]">
           <div className="flex items-center gap-2.5">
@@ -264,19 +260,16 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
               <TicketIcon className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white tracking-tight">
-                {step === 'upload' && 'Add Movie Ticket to Vault'}
-                {step === 'scanning' && 'Scanning Ticket Screenshot...'}
-                {step === 'verify' && 'Verify & Save Collectible Stub'}
+              <h2 className="text-sm font-bold text-white tracking-tight uppercase">
+                {step === 'upload' && 'Add Movie Ticket'}
+                {step === 'scanning' && 'Scanning Ticket Stub...'}
+                {step === 'verify' && 'Review & Save Stub'}
               </h2>
-              <p className="text-[11px] text-slate-400">
-                100% Free · 100% In-Browser · Saved Permanently On Device
-              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -286,12 +279,12 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
         <div className="flex-1 overflow-y-auto p-6">
           {/* STEP 1: UPLOAD SCREENSHOT */}
           {step === 'upload' && (
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                className="group relative border-2 border-dashed border-slate-700 hover:border-amber-500/60 rounded-2xl p-10 text-center cursor-pointer bg-[#121520]/80 hover:bg-[#161a29]/90 transition-all duration-300 flex flex-col items-center justify-center min-h-[300px]"
+                className="group relative border-2 border-dashed border-slate-800 hover:border-amber-500/60 rounded-2xl p-12 text-center cursor-pointer bg-[#121520] hover:bg-[#151926] transition-all flex flex-col items-center justify-center min-h-[320px]"
               >
                 <input
                   type="file"
@@ -301,56 +294,30 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
                   className="hidden"
                 />
 
-                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 group-hover:bg-amber-500/20 transition-all mb-4 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
-                  <Upload className="w-8 h-8" />
+                <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-400 group-hover:scale-105 transition-all mb-4">
+                  <Upload className="w-7 h-7" />
                 </div>
 
-                <h3 className="text-lg font-bold text-white group-hover:text-amber-300 transition-colors">
-                  Drop your ticket screenshot here
+                <h3 className="text-base font-bold text-white group-hover:text-amber-300 transition-colors">
+                  Upload or drop your ticket screenshot
                 </h3>
-                <p className="text-xs text-slate-400 mt-1.5 max-w-md">
-                  Works with booking screenshots from <strong className="text-slate-300">BookMyShow, AMC, Fandango, PVR, Regal, Cinepolis</strong>, or any e-ticket image.
+                <p className="text-xs text-slate-400 mt-1.5 max-w-sm">
+                  Compatible with BookMyShow, PVR INOX, AMC, Fandango, WhatsApp passes, and digital stubs.
                 </p>
 
-                <div className="mt-5 flex items-center gap-2">
-                  <span className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-lg shadow-amber-500/20 transition-all">
-                    Choose Image File
+                <div className="mt-5">
+                  <span className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-md transition-all">
+                    Select Screenshot
                   </span>
-                </div>
-              </div>
-
-              {/* Supported details highlight */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-slate-400">
-                <div className="p-3 rounded-xl bg-[#121520] border border-slate-800 flex items-start gap-2.5">
-                  <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-slate-200 block">Browser-Side AI Scanner</strong>
-                    Free WebAssembly OCR extracts title, seats, time &amp; theater.
-                  </div>
-                </div>
-                <div className="p-3 rounded-xl bg-[#121520] border border-slate-800 flex items-start gap-2.5">
-                  <Film className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-slate-200 block">Theatrical Metadata</strong>
-                    Auto-fetches official poster, director, runtime &amp; synopsis.
-                  </div>
-                </div>
-                <div className="p-3 rounded-xl bg-[#121520] border border-slate-800 flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-slate-200 block">100% Private &amp; Offline</strong>
-                    Zero cloud API costs. Everything stays on your computer.
-                  </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* STEP 2: SCANNING SCREENSHOT (WITH LASER SWEEP ANIMATION) */}
+          {/* STEP 2: SCANNING SCREENSHOT */}
           {step === 'scanning' && (
             <div className="flex flex-col items-center justify-center py-10 space-y-6">
-              {/* Preview image with laser scanning line */}
-              <div className="relative w-72 h-96 rounded-2xl overflow-hidden border-2 border-amber-500/50 shadow-[0_0_40px_rgba(245,158,11,0.3)] bg-slate-900">
+              <div className="relative w-64 h-80 rounded-2xl overflow-hidden border border-amber-500/40 shadow-2xl bg-slate-900">
                 {screenshotDataUrl && (
                   <img
                     src={screenshotDataUrl}
@@ -359,75 +326,61 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
                   />
                 )}
                 <div className="laser-line" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
-
-                <div className="absolute bottom-4 left-4 right-4 text-center">
-                  <span className="text-xs font-mono font-bold text-amber-400 uppercase tracking-widest bg-black/75 px-3 py-1 rounded-full border border-amber-500/40">
-                    Scanning Stub
-                  </span>
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
               </div>
 
-              {/* Status and Progress Bar */}
-              <div className="w-full max-w-md space-y-2 text-center">
-                <p className="text-sm font-semibold text-white animate-pulse">
-                  {scanStatus || 'Analyzing ticket details...'}
+              <div className="w-full max-w-sm space-y-2 text-center">
+                <p className="text-xs font-semibold text-slate-200">
+                  {scanStatus || 'Reading ticket details...'}
                 </p>
-
-                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-300 shadow-[0_0_10px_#f59e0b]"
+                    className="h-full bg-amber-400 transition-all duration-300"
                     style={{ width: `${Math.round(scanProgress * 100)}%` }}
                   />
                 </div>
-
-                <span className="text-xs font-mono text-slate-500">
-                  {Math.round(scanProgress * 100)}% Complete
-                </span>
               </div>
             </div>
           )}
 
           {/* STEP 3: VERIFY & EDIT DETAILS */}
           {step === 'verify' && (
-            <div className="space-y-6">
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>
-                  Ticket details scanned! Check the information below and tweak anything before saving to your vault.
-                </span>
-              </div>
-
+            <div className="space-y-5">
               {/* Movie Header / Poster Search Card */}
-              <div className="p-4 rounded-2xl bg-[#141724] border border-slate-800 flex flex-col sm:flex-row gap-5 items-start">
-                {/* Poster Display */}
-                <div className="relative w-28 h-40 shrink-0 rounded-xl overflow-hidden bg-slate-900 border border-slate-700 shadow-xl">
+              <div className="p-4 rounded-xl bg-[#141724] border border-slate-800 flex flex-col sm:flex-row gap-5 items-start">
+                {/* Poster Display & Switcher */}
+                <div className="relative w-28 h-40 shrink-0 rounded-xl overflow-hidden bg-slate-900 border border-slate-700 shadow-lg">
                   <img
                     src={posterUrl || generateFallbackPosterSvg(title)}
                     alt={title}
                     className="w-full h-full object-cover"
                   />
-                  <span className="absolute bottom-1.5 left-1.5 right-1.5 text-center text-[9px] font-bold uppercase bg-black/80 text-amber-300 px-1 py-0.5 rounded backdrop-blur-sm">
-                    {format}
-                  </span>
+                  {screenshotDataUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setPosterUrl(screenshotDataUrl)}
+                      className="absolute bottom-1.5 left-1.5 right-1.5 text-center text-[9px] font-bold uppercase bg-black/80 hover:bg-amber-500 hover:text-slate-950 text-slate-300 px-1 py-1 rounded backdrop-blur-sm transition-colors flex items-center justify-center gap-1"
+                      title="Use screenshot crop as poster"
+                    >
+                      <ImageIcon className="w-3 h-3" />
+                      <span>Use Stub Art</span>
+                    </button>
+                  )}
                 </div>
 
                 {/* Movie Title & Auto-Lookup Input */}
                 <div className="flex-1 space-y-3 w-full">
                   <div className="relative">
-                    <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
-                      <span>Movie Title</span>
-                      <span className="text-[10px] text-amber-400 font-normal">
-                        Type to search official posters &amp; info
-                      </span>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Movie Title
                     </label>
                     <div className="relative">
                       <input
                         type="text"
                         value={title}
                         onChange={(e) => handleSearchMovieTitle(e.target.value)}
-                        placeholder="e.g. Oppenheimer, Dune: Part Two"
-                        className="w-full px-3 py-2 bg-black/50 border border-slate-700 rounded-xl text-sm font-bold text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                        placeholder="Movie Title"
+                        className="w-full px-3 py-2 bg-black/40 border border-slate-700 rounded-xl text-sm font-bold text-white focus:outline-none focus:border-amber-500"
                       />
                       {isSearchingMovie && (
                         <Search className="w-4 h-4 text-amber-400 animate-spin absolute right-3 top-1/2 -translate-y-1/2" />
@@ -451,8 +404,7 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
                             <div className="min-w-0">
                               <h5 className="text-xs font-bold text-white truncate">{m.title}</h5>
                               <p className="text-[11px] text-slate-400 truncate">
-                                {m.year} {m.director ? `· ${m.director}` : ''}{' '}
-                                {m.genres?.length > 0 ? `· ${m.genres.join(', ')}` : ''}
+                                {m.year} {m.director ? `· ${m.director}` : ''}
                               </p>
                             </div>
                           </div>
@@ -469,7 +421,7 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
                         type="text"
                         value={year}
                         onChange={(e) => setYear(e.target.value)}
-                        placeholder="2023"
+                        placeholder="2026"
                         className="w-full px-2.5 py-1.5 bg-black/40 border border-slate-700 rounded-lg text-xs text-white"
                       />
                     </div>
@@ -479,7 +431,7 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
                         type="text"
                         value={director}
                         onChange={(e) => setDirector(e.target.value)}
-                        placeholder="Christopher Nolan"
+                        placeholder="Director"
                         className="w-full px-2.5 py-1.5 bg-black/40 border border-slate-700 rounded-lg text-xs text-white truncate"
                       />
                     </div>
@@ -489,7 +441,7 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
                         type="text"
                         value={runtime}
                         onChange={(e) => setRuntime(e.target.value)}
-                        placeholder="180 min"
+                        placeholder="120 min"
                         className="w-full px-2.5 py-1.5 bg-black/40 border border-slate-700 rounded-lg text-xs text-white"
                       />
                     </div>
@@ -498,7 +450,7 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
               </div>
 
               {/* Cinema & Screening Details Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {/* Cinema Name */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
@@ -509,30 +461,29 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
                     type="text"
                     value={cinema}
                     onChange={(e) => setCinema(e.target.value)}
-                    placeholder="e.g. AMC Empire 25, PVR INOX"
+                    placeholder="Cinema Name"
                     className="w-full px-3 py-2 bg-[#141724] border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
                   />
                 </div>
 
                 {/* Format Selector */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
-                    <Film className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Experience Format</span>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Format
                   </label>
                   <select
                     value={format}
                     onChange={(e) => setFormat(e.target.value as MovieFormat)}
                     className="w-full px-3 py-2 bg-[#141724] border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500 cursor-pointer"
                   >
+                    <option value="2D">2D</option>
                     <option value="IMAX">IMAX</option>
                     <option value="IMAX 3D">IMAX 3D</option>
                     <option value="Dolby Cinema">Dolby Cinema</option>
                     <option value="Dolby Atmos">Dolby Atmos</option>
                     <option value="4DX">4DX</option>
-                    <option value="3D">3D / RealD 3D</option>
+                    <option value="3D">3D</option>
                     <option value="ScreenX">ScreenX</option>
-                    <option value="2D">Standard 2D</option>
                   </select>
                 </div>
 
@@ -543,9 +494,10 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
                     <span>Date Watched</span>
                   </label>
                   <input
-                    type="date"
+                    type="text"
                     value={dateWatched}
                     onChange={(e) => setDateWatched(e.target.value)}
+                    placeholder="30 Sep 2026"
                     className="w-full px-3 py-2 bg-[#141724] border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
                   />
                 </div>
@@ -567,15 +519,14 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
 
                 {/* Hall / Screen */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
-                    <Film className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Auditorium / Screen</span>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Screen / Auditorium
                   </label>
                   <input
                     type="text"
                     value={hallOrScreen}
                     onChange={(e) => setHallOrScreen(e.target.value)}
-                    placeholder="Audi 4, IMAX 1"
+                    placeholder="Screen 1"
                     className="w-full px-3 py-2 bg-[#141724] border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
                   />
                 </div>
@@ -590,7 +541,7 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
                     type="text"
                     value={seats}
                     onChange={(e) => setSeats(e.target.value)}
-                    placeholder="E12, E13 or Row F"
+                    placeholder="K8, L8, or N10, N9"
                     className="w-full px-3 py-2 bg-[#141724] border border-slate-700 rounded-xl text-xs text-amber-300 font-bold focus:outline-none focus:border-amber-500"
                   />
                 </div>
@@ -598,13 +549,13 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
                 {/* Booking ID */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Booking ID / Order #
+                    Booking ID / Order Ref
                   </label>
                   <input
                     type="text"
                     value={bookingId}
                     onChange={(e) => setBookingId(e.target.value)}
-                    placeholder="e.g. BMS-89310"
+                    placeholder="e.g. TPAFADW"
                     className="w-full px-3 py-2 bg-[#141724] border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
                   />
                 </div>
@@ -613,13 +564,13 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
                     <Coins className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Ticket Price Paid</span>
+                    <span>Price Paid</span>
                   </label>
                   <input
                     type="text"
                     value={ticketPrice}
                     onChange={(e) => setTicketPrice(e.target.value)}
-                    placeholder="$19.50 or ₹450"
+                    placeholder="₹166.58"
                     className="w-full px-3 py-2 bg-[#141724] border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
                   />
                 </div>
@@ -633,26 +584,26 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
                     type="text"
                     value={companions}
                     onChange={(e) => setCompanions(e.target.value)}
-                    placeholder="e.g. Alex, Sam"
+                    placeholder="Solo, Friends, Family"
                     className="w-full px-3 py-2 bg-[#141724] border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
                   />
                 </div>
               </div>
 
               {/* Diary & Rating Section */}
-              <div className="p-4 rounded-2xl bg-[#141724] border border-amber-500/25 space-y-3">
+              <div className="p-4 rounded-xl bg-[#141724] border border-slate-800 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
-                    Initial Diary Rating &amp; Review
+                    Diary Rating
                   </span>
                   <StarRating rating={rating} onChange={(r) => setRating(r)} size="md" showNumber />
                 </div>
                 <textarea
                   value={review}
                   onChange={(e) => setReview(e.target.value)}
-                  placeholder="What did you think of the film? Any standout theater experiences or audience reactions?"
-                  rows={3}
-                  className="w-full p-3 bg-black/40 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                  placeholder="Your personal review or memories (optional)..."
+                  rows={2}
+                  className="w-full p-2.5 bg-black/40 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
                 />
               </div>
             </div>
@@ -666,7 +617,7 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
               onClick={() => setStep('upload')}
               className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition-colors"
             >
-              Upload Different Image
+              Different Screenshot
             </button>
           ) : (
             <div />
@@ -683,10 +634,9 @@ export const AddTicketModal: React.FC<AddTicketModalProps> = ({
             {step === 'verify' && (
               <button
                 onClick={handleSave}
-                className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-black shadow-[0_0_20px_rgba(245,158,11,0.35)] transition-all transform active:scale-95"
+                className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black shadow-lg shadow-amber-500/20 transition-all transform active:scale-95"
               >
-                <Sparkles className="w-4 h-4" />
-                <span>Save to Permanent Vault</span>
+                Save to Vault
               </button>
             )}
           </div>

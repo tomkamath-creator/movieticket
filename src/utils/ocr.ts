@@ -5,7 +5,6 @@ export type OcrProgressCallback = (status: string, progress: number) => void;
 
 /**
  * Runs client-side OCR using Tesseract.js directly inside the browser.
- * Free, offline-capable, and preserves complete user privacy.
  */
 export async function scanTicketScreenshot(
   imageSource: string | File | Blob,
@@ -13,32 +12,29 @@ export async function scanTicketScreenshot(
 ): Promise<ExtractedTicketData> {
   let worker: Awaited<ReturnType<typeof createWorker>> | null = null;
   try {
-    onProgress?.('Initializing scanner...', 0.1);
+    onProgress?.('Reading ticket image...', 0.15);
 
     worker = await createWorker('eng', 1, {
       logger: (m) => {
         if (m.status === 'recognizing text') {
           const progress = 0.2 + (m.progress || 0) * 0.7;
-          onProgress?.(`Reading ticket text: ${Math.round((m.progress || 0) * 100)}%`, progress);
-        } else if (m.status) {
-          onProgress?.(m.status, 0.2);
+          onProgress?.(`Scanning: ${Math.round((m.progress || 0) * 100)}%`, progress);
         }
       },
     });
 
-    onProgress?.('Scanning ticket details...', 0.3);
+    onProgress?.('Analyzing cinema details...', 0.3);
     const result = await worker.recognize(imageSource);
     const rawText = result.data.text || '';
 
-    onProgress?.('Extracting cinema metadata...', 0.95);
+    onProgress?.('Extracting information...', 0.95);
     const extracted = parseTicketText(rawText);
     extracted.rawOcrText = rawText;
 
-    onProgress?.('Complete!', 1.0);
+    onProgress?.('Done', 1.0);
     return extracted;
   } catch (err) {
     console.error('OCR processing error:', err);
-    // Return empty extracted object rather than crashing
     return {
       title: '',
       cinema: '',
@@ -55,42 +51,78 @@ export async function scanTicketScreenshot(
 }
 
 /**
- * Parses raw text extracted from a booking app screenshot (BookMyShow, AMC, Fandango, PVR, etc.)
+ * Cleans raw movie titles extracted from booking tickets (BookMyShow, PVR INOX, AMC, etc.)
+ * Strips certifications (UA13+, A, U, PG-13), language/subtitles, and OCR noise.
+ */
+export function cleanMovieTitle(raw: string): string {
+  if (!raw) return '';
+
+  let cleaned = raw
+    // Join wrapped words like "Mov\nie:" -> "Movie:"
+    .replace(/Mov\s*ie/gi, 'Movie')
+    // Remove certification suffixes like (UA13+), (UA16+), (UA), (A), (U), (PG-13), (R)
+    .replace(/\s*\((?:UA\s*\d*\+?|UA|A|U|PG-?13|R|PG|NC-?17)\)/gi, '')
+    // Remove multi-line or single-line language / subtitle parentheticals
+    .replace(/\s*\([^)]*(?:ENGLISH|HINDI|JAPANESE|TAMIL|TELUGU|SUBTITLE|UA|PG|NC|\+)[^)]*\)/gi, '')
+    .replace(/\s*\([^)]*$/g, '') // remove unclosed parenthetical at end of line like "(ENGLISH WITH"
+    .replace(/\s*\([^)]*\)/g, '') // remove any remaining parentheticals
+    // Remove language / format keywords if leftover
+    .replace(/\b(?:ENGLISH|HINDI|JAPANESE|TAMIL|TELUGU|2D|3D|IMAX|4DX)\b/gi, '')
+    // Remove common OCR junk prefixes like TT, SOM, py, LC" JM, [Em], etc.
+    .replace(/^(?:TT|SOM|py|LC[”"]?\s*JM|\[[^\]]+\]|\W)+\s*/i, '')
+    // Remove common booking phrases that might be caught
+    .replace(/\b(?:Watch\s*Trailer|Trailer|Booking\s*Details|Enjoy\s*your\s*show)\b/gi, '')
+    // Strip trailing/leading punctuation
+    .replace(/^[•\s\-_:*|/]+/, '')
+    .replace(/[•\s\-_:*|/]+$/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Capitalize nicely if all uppercase
+  if (cleaned.length > 3 && cleaned === cleaned.toUpperCase()) {
+    cleaned = cleaned
+      .toLowerCase()
+      .split(' ')
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+  }
+
+  return cleaned;
+}
+
+/**
+ * Intelligent parser specifically tuned for real booking tickets:
+ * BookMyShow, PVR INOX, WhatsApp E-Tickets, AMC, Fandango, Regal.
  */
 export function parseTicketText(text: string): ExtractedTicketData {
-  const lines = text
-    .split('\n')
-    .map((l) => l.trim())
-    .filter((l) => l.length > 0);
-
   const data: ExtractedTicketData = {};
 
   // 1. Detect Format
   data.format = detectFormat(text);
 
   // 2. Detect Cinema Name
-  data.cinema = detectCinema(lines, text);
+  data.cinema = detectCinema(text);
 
-  // 3. Detect Date
-  data.dateWatched = detectDate(text);
+  // 3. Detect Auditorium / Screen
+  data.hallOrScreen = detectScreen(text);
 
-  // 4. Detect Showtime
-  data.timeWatched = detectTime(text);
-
-  // 5. Detect Seats
+  // 4. Detect Seats
   data.seats = detectSeats(text);
 
-  // 6. Detect Screen / Hall / Auditorium
-  data.hallOrScreen = detectHall(text);
-
-  // 7. Detect Booking Reference ID
+  // 5. Detect Booking / Order ID
   data.bookingId = detectBookingId(text);
 
-  // 8. Detect Price
+  // 6. Detect Date
+  data.dateWatched = detectDate(text);
+
+  // 7. Detect Showtime
+  data.timeWatched = detectTime(text);
+
+  // 8. Detect Ticket Price
   data.ticketPrice = detectPrice(text);
 
   // 9. Detect Movie Title
-  data.title = detectMovieTitle(lines, text, data.cinema);
+  data.title = detectMovieTitle(text);
 
   return data;
 }
@@ -103,211 +135,195 @@ function detectFormat(text: string): MovieFormat {
   if (upper.includes('DOLBY ATMOS')) return 'Dolby Atmos';
   if (upper.includes('4DX')) return '4DX';
   if (upper.includes('SCREENX') || upper.includes('SCREEN X')) return 'ScreenX';
-  if (upper.includes('REALD 3D') || upper.includes('3D')) return '3D';
+  if (upper.includes('3D')) return '3D';
   return '2D';
 }
 
-function detectCinema(lines: string[], text: string): string {
-  // Known cinema chains
-  const chains = [
-    'AMC Theatres',
-    'AMC',
-    'Regal Cinemas',
-    'Regal',
-    'Cinemark',
-    'PVR INOX',
-    'PVR',
-    'INOX',
-    'BookMyShow',
-    'Fandango',
-    'Cinepolis',
-    'Alamo Drafthouse',
-    'Marcus Theatres',
-    'Harkins',
-    'Landmark Cinemas',
-    'Odeon',
-    'Cineworld',
-    'Vue',
-    'TCL Chinese Theatre',
-  ];
+function detectCinema(text: string): string {
+  const lines = text
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
 
+  // Scan lines for cinema brands
   for (const line of lines) {
-    for (const chain of chains) {
-      if (line.toLowerCase().includes(chain.toLowerCase())) {
-        return line.replace(/[|•]/g, ' ').replace(/\s+/g, ' ').trim();
-      }
+    if (
+      /(?:PVR|INOX|C&B\s*Square|Infiniti|Andheri|AMC|Regal|Cinemark|Cinepolis|Sangam|Forum|Phoenix|Cineplex)/i.test(line) &&
+      !/(?:choosing|enjoy|support|wallet|trailer|booking details|booked|successful|welcome|dear|total|amount)/i.test(line)
+    ) {
+      return line
+        .replace(/^[^\w]*(?:PVR|INOX)/i, (m) => m.trim())
+        .replace(/[•|]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
     }
   }
 
-  // Regex for "Cinema", "Theatre", "Multiplex"
-  const match = text.match(/([A-Z0-9&'\s]+(?:Cinemas?|Theatres?|Multiplex|Hall|PVR|AMC)[A-Z0-9&'\s,-]*)/i);
+  // Generic fallback match
+  const match = text.match(/([A-Z0-9&'\s]+(?:Cinemas?|Theatres?|Multiplex|PVR|INOX)[A-Z0-9&'\s,-]*)/i);
   if (match) {
     return match[1].slice(0, 50).trim();
   }
 
-  return 'Local Cinema';
+  return 'Cinema';
 }
 
-function detectDate(text: string): string {
-  const today = new Date().toISOString().split('T')[0];
-
-  // Try standard date formats
-  // Format: "Sat, Jul 22, 2023" or "July 22, 2023"
-  const monthNames = 'Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December';
-  const verbalDateMatch = text.match(new RegExp(`(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)?[,\\s]*(${monthNames})\\s*(\\d{1,2})(?:st|nd|rd|th)?[,\\s]*(\\d{4})?`, 'i'));
-  if (verbalDateMatch) {
-    try {
-      const year = verbalDateMatch[3] || new Date().getFullYear().toString();
-      const monthStr = verbalDateMatch[1];
-      const day = verbalDateMatch[2].padStart(2, '0');
-      const parsed = new Date(`${monthStr} ${day}, ${year}`);
-      if (!isNaN(parsed.getTime())) {
-        return parsed.toISOString().split('T')[0];
-      }
-    } catch {
-      // ignore
-    }
+function detectScreen(text: string): string {
+  const match = text.match(/(?:SCREEN|AUDI(?:TORIUM)?|HALL)\s*([0-9]+)/i);
+  if (match) {
+    return `Screen ${match[1]}`;
   }
-
-  // Format: "22 Jul 2023"
-  const dayMonthMatch = text.match(new RegExp(`(\\d{1,2})\\s*(${monthNames})\\s*(\\d{4})?`, 'i'));
-  if (dayMonthMatch) {
-    try {
-      const day = dayMonthMatch[1].padStart(2, '0');
-      const monthStr = dayMonthMatch[2];
-      const year = dayMonthMatch[3] || new Date().getFullYear().toString();
-      const parsed = new Date(`${monthStr} ${day}, ${year}`);
-      if (!isNaN(parsed.getTime())) {
-        return parsed.toISOString().split('T')[0];
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  // Format: "2023-07-22" or "22/07/2023" or "07/22/2023"
-  const isoMatch = text.match(/\b(202\d[-/]\d{1,2}[-/]\d{1,2})\b/);
-  if (isoMatch) return isoMatch[1].replace(/\//g, '-');
-
-  const slashMatch = text.match(/\b(\d{1,2})[/-](\d{1,2})[/-](202\d|\d{2})\b/);
-  if (slashMatch) {
-    let year = slashMatch[3];
-    if (year.length === 2) year = `20${year}`;
-    const part1 = slashMatch[1].padStart(2, '0');
-    const part2 = slashMatch[2].padStart(2, '0');
-    return `${year}-${part1}-${part2}`;
-  }
-
-  return today;
-}
-
-function detectTime(text: string): string {
-  // Format: "07:30 PM" or "7:30pm" or "19:30"
-  const time12Match = text.match(/\b(0?[1-9]|1[0-2]):([0-5][0-9])\s*(AM|PM|am|pm)\b/);
-  if (time12Match) {
-    const hours = time12Match[1].padStart(2, '0');
-    const mins = time12Match[2];
-    const ampm = time12Match[3].toUpperCase();
-    return `${hours}:${mins} ${ampm}`;
-  }
-
-  const time24Match = text.match(/\b(1[0-9]|2[0-3]):([0-5][0-9])\b/);
-  if (time24Match) {
-    const h = parseInt(time24Match[1], 10);
-    const m = time24Match[2];
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    const h12 = h % 12 || 12;
-    return `${h12.toString().padStart(2, '0')}:${m} ${ampm}`;
-  }
-
-  return '07:00 PM';
+  return 'Screen 1';
 }
 
 function detectSeats(text: string): string {
-  // Patterns like "Seats: E12, E13" or "Seat E12" or "Row F · Seat 18, 19"
-  const seatPrefixMatch = text.match(/(?:Seats?|Seat No|Seat Numbers?)\s*[:#-]?\s*([A-Za-z0-9,\s\-–]+)/i);
-  if (seatPrefixMatch) {
-    const candidate = seatPrefixMatch[1].split('\n')[0].trim();
-    if (candidate.length > 0 && candidate.length < 35) {
-      return candidate;
+  // 1. BookMyShow format like "QR-K8" or "PR-J9"
+  const bmsSeat = text.match(/\b(?:QR|PR|CL|EX|GL|DI)[-–\s]?([A-Z]\s*\d{1,2})\b/i);
+  if (bmsSeat) {
+    return bmsSeat[1].replace(/\s+/g, '').toUpperCase();
+  }
+
+  // 2. Multiple seat tags like "N10 N9 N8 N7" or "A1, A2"
+  const multiSeatMatch = text.match(/\b([A-Z]\d{1,2}(?:\s+[A-Z]\d{1,2})+)\b/);
+  if (multiSeatMatch) {
+    return multiSeatMatch[1].split(/\s+/).join(', ');
+  }
+
+  // 3. Line under "SEATS INFO"
+  const seatsInfoMatch = text.match(/SEATS?\s*(?:INFO)?[\s\n:]+([A-Z]\d{1,2}(?:[\s,]+[A-Z]?\d{1,2})*)/i);
+  if (seatsInfoMatch) {
+    return seatsInfoMatch[1].trim();
+  }
+
+  // 4. Standalone Seat e.g. "L8" or "R6"
+  const lines = text.split('\n').map((l) => l.trim());
+  for (const l of lines) {
+    if (/^[A-Z]\d{1,2}$/i.test(l)) {
+      return l.toUpperCase();
     }
   }
 
-  const rowSeatMatch = text.match(/Row\s*([A-Z])\s*[,·-]?\s*Seat\s*([0-9\s,&-]+)/i);
-  if (rowSeatMatch) {
-    return `Row ${rowSeatMatch[1]} · Seat ${rowSeatMatch[2].trim()}`;
-  }
-
-  // Format: "E12, E13" or "F14"
-  const letterNumberMatch = text.match(/\b([A-Z]\s*[-–]?\s*\d{1,2}(?:\s*,\s*[A-Z]?\s*[-–]?\s*\d{1,2})*)\b/);
-  if (letterNumberMatch) {
-    return letterNumberMatch[1];
+  const singleSeatMatch = text.match(/\b(?:Row\s*[A-Z]\s*Seat\s*\d+|[A-Z]\d{1,2})\b/i);
+  if (singleSeatMatch) {
+    return singleSeatMatch[0].toUpperCase();
   }
 
   return 'General Admission';
 }
 
-function detectHall(text: string): string {
-  const match = text.match(/(Audi(?:torium)?\s*\d+|Screen\s*\d+|Hall\s*\d+|Theater\s*\d+|IMAX\s*Screen)/i);
-  return match ? match[1] : 'Screen 1';
-}
-
 function detectBookingId(text: string): string {
-  const match = text.match(/(?:Booking ID|Order ID|Confirmation|Ref No|Ticket ID)\s*[:#-]?\s*([A-Za-z0-9-]+)/i);
-  return match ? match[1] : '';
-}
+  // Matches "BOOKING ID: TPAFADW", "Order ID 1538145", "Booking ID: TQAMD87"
+  const match = text.match(/(?:BOOKING\s*ID|Order\s*ID|Ref\s*No|Ticket\s*ID)[\s:0#-]*([A-Z0-9]{5,20})/i);
+  if (match) {
+    return match[1];
+  }
 
-function detectPrice(text: string): string {
-  const match = text.match(/(?:Total|Amount|Paid|Price|Cost)\s*[:#-]?\s*([$₹€£]\s*[0-9]+(?:[.,][0-9]{2})?|[0-9]+(?:[.,][0-9]{2})?\s*[$₹€£])/i);
-  return match ? match[1] : '';
-}
-
-function detectMovieTitle(lines: string[], _fullText: string, cinemaName: string): string {
-  const ignorePatterns = [
-    /bookmyshow/i,
-    /fandango/i,
-    /amc/i,
-    /regal/i,
-    /cinemark/i,
-    /pvr/i,
-    /inox/i,
-    /booking/i,
-    /ticket/i,
-    /confirmed/i,
-    /order/i,
-    /m-ticket/i,
-    /tax invoice/i,
-    /screen/i,
-    /audi/i,
-    /seat/i,
-    /row/i,
-    /date/i,
-    /time/i,
-    /total/i,
-    /paid/i,
-    /qr code/i,
-    /scan/i,
-    /cinema/i,
-    /theatre/i,
-    /hall/i,
-    /admit/i,
-    /bar/i,
-  ];
-
-  for (const line of lines) {
-    // If line matches cinema name or is too short or too long
-    if (line.length < 3 || line.length > 50) continue;
-    if (cinemaName && line.toLowerCase().includes(cinemaName.toLowerCase())) continue;
-
-    const matchesIgnore = ignorePatterns.some((pattern) => pattern.test(line));
-    if (!matchesIgnore) {
-      // Looks like a valid movie title line!
-      return line
-        .replace(/^[•\s\-_:*]+/, '')
-        .replace(/[•\s\-_:*]+$/, '')
-        .trim();
-    }
+  // Standalone uppercase booking code like "TPAFADW", "TAANCRV", "TCAQEQ6"
+  const standaloneCode = text.match(/\b([A-Z]{4,8}[0-9]{0,4})\b/);
+  if (standaloneCode && !['SCREEN', 'PVR', 'INOX', 'TICKET', 'TOTAL', 'ACTION', 'PRICE', 'AMOUNT'].includes(standaloneCode[1])) {
+    return standaloneCode[1];
   }
 
   return '';
+}
+
+function detectDate(text: string): string {
+  const currentYear = new Date().getFullYear().toString();
+  const monthNames = 'Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December';
+
+  // Format 1: "Tue, 30 Sep" or "Fri, 17 Jul"
+  const verbalDate = text.match(new RegExp(`(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)?[,\\s]*(\\d{1,2})[-/\\s]+(${monthNames})(?:[-/\\s]*(20\\d{2}))?`, 'i'));
+  if (verbalDate) {
+    const day = verbalDate[1];
+    const month = verbalDate[2];
+    const yr = verbalDate[3] || currentYear;
+    return `${day} ${month} ${yr}`;
+  }
+
+  // Format 2: "03-Apr-2026"
+  const dayMonthYear = text.match(new RegExp(`(\\d{1,2})[-/\\s]+(${monthNames})[-/\\s]+(\\d{4})`, 'i'));
+  if (dayMonthYear) {
+    return `${dayMonthYear[1]} ${dayMonthYear[2]} ${dayMonthYear[3]}`;
+  }
+
+  // Format 3: ISO date "2026-07-17"
+  const isoMatch = text.match(/\b(202\d[-/]\d{1,2}[-/]\d{1,2})\b/);
+  if (isoMatch) return isoMatch[1].replace(/\//g, '-');
+
+  return new Date().toISOString().split('T')[0];
+}
+
+function detectTime(text: string): string {
+  // Format: "03:45 PM" or "9:45 AM" or "11:05 AM"
+  const match = text.match(/\b(0?[1-9]|1[0-2]):([0-5][0-9])\s*(AM|PM)\b/i);
+  if (match) {
+    const hours = match[1].padStart(2, '0');
+    const mins = match[2];
+    const ampm = match[3].toUpperCase();
+    return `${hours}:${mins} ${ampm}`;
+  }
+  return '07:00 PM';
+}
+
+function detectPrice(text: string): string {
+  const match = text.match(/(?:Total(?:\s*Ticket\s*Price|\s*Amount)?|Price|Paid)\s*[:#-]?\s*[₹$€£]?\s*([0-9]+(?:[.,][0-9]{2})?)/i);
+  if (match) {
+    return `₹${match[1]}`;
+  }
+  return '';
+}
+
+function detectMovieTitle(text: string): string {
+  // Strip multi-line subtitles before line splitting
+  const normalizedText = text
+    .replace(/\n\s*ENGLISH SUBTITLE[^\n]*/gi, '')
+    .replace(/\n\s*WITH ENGLISH SUBTITLE[^\n]*/gi, '');
+
+  const lines = normalizedText
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
+
+  let rawTitle = '';
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Check if line contains certification like (UA13+), (A), (U) or language
+    if (/\((?:UA\d*\+?|A|U|PG-?\d*)\)/i.test(line) || /\(ENGLISH|\(HINDI|\(JAPANESE/i.test(line)) {
+      if (i > 0 && lines[i - 1].length > 3 && !/Ticket|Enjoy|PVR|INOX|Booking|Thank|choosing/i.test(lines[i - 1])) {
+        rawTitle = `${lines[i - 1]} ${line}`;
+      } else {
+        rawTitle = line;
+      }
+      break;
+    }
+
+    // Check if next line is format/language (e.g. "Japanese, 2D" or "Action • English")
+    if (i < lines.length - 1 && /(?:Japanese|English|Hindi|Tamil|Telugu|Action|Thriller|Drama|Romance)\s*[,•]/i.test(lines[i + 1])) {
+      if (line.length > 2 && !/Ticket|Enjoy|PVR|INOX|Booking|Thank|choosing/i.test(line)) {
+        if (i > 0 && lines[i - 1].length > 3 && !/Ticket|Enjoy|PVR|INOX|Booking|Thank|choosing/i.test(lines[i - 1])) {
+          rawTitle = `${lines[i - 1]} ${line}`;
+        } else {
+          rawTitle = line;
+        }
+        break;
+      }
+    }
+  }
+
+  // Fallback: line right after "Enjoy your show"
+  if (!rawTitle) {
+    for (let i = 0; i < lines.length; i++) {
+      if (/Enjoy your show/i.test(lines[i]) && i < lines.length - 1) {
+        rawTitle = lines[i + 1];
+        if (i + 2 < lines.length && /\(ENGLISH|\(A\)/i.test(lines[i + 2])) {
+          rawTitle += ' ' + lines[i + 2];
+        }
+        break;
+      }
+    }
+  }
+
+  return cleanMovieTitle(rawTitle);
 }

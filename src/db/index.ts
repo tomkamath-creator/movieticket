@@ -1,6 +1,5 @@
 import Dexie, { type Table } from 'dexie';
 import type { Ticket } from '../types';
-import { SAMPLE_TICKETS } from './sampleData';
 
 export class BucketPassDatabase extends Dexie {
   tickets!: Table<Ticket, string>;
@@ -15,13 +14,21 @@ export class BucketPassDatabase extends Dexie {
 
 export const db = new BucketPassDatabase();
 
-// Seed initial sample tickets if database is empty
+// Initialize database: cleanly removes any mock/sample tickets from previous launches
 export async function initDatabase(): Promise<Ticket[]> {
-  const count = await db.tickets.count();
-  if (count === 0) {
-    await db.tickets.bulkAdd(SAMPLE_TICKETS);
-    return SAMPLE_TICKETS;
+  try {
+    // Delete any mock sample tickets so the user only sees their own genuine tickets
+    const sampleKeys = await db.tickets
+      .filter((t) => t.id.startsWith('sample-'))
+      .primaryKeys();
+
+    if (sampleKeys.length > 0) {
+      await db.tickets.bulkDelete(sampleKeys);
+    }
+  } catch (err) {
+    console.warn('Error purging sample tickets:', err);
   }
+
   return db.tickets.orderBy('dateWatched').reverse().toArray();
 }
 
@@ -67,7 +74,7 @@ export async function importVault(jsonString: string): Promise<{ success: boolea
   try {
     const data = JSON.parse(jsonString);
     if (!data.tickets || !Array.isArray(data.tickets)) {
-      return { success: false, count: 0, error: 'Invalid vault backup format: tickets array missing.' };
+      return { success: false, count: 0, error: 'Invalid vault backup: missing tickets array.' };
     }
     await db.tickets.bulkPut(data.tickets);
     return { success: true, count: data.tickets.length };

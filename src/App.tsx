@@ -18,7 +18,7 @@ import { TicketInspectorModal } from './components/modals/TicketInspectorModal';
 import { AddTicketModal } from './components/modals/AddTicketModal';
 import { EditTicketModal } from './components/modals/EditTicketModal';
 import { StatsModal } from './components/modals/StatsModal';
-import { Film, ShieldCheck, HardDrive, Plus } from 'lucide-react';
+import { Film, Plus, Ticket as TicketIcon } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -51,7 +51,7 @@ export const App: React.FC = () => {
         const loaded = await initDatabase();
         setTickets(loaded);
       } catch (err) {
-        console.error('Failed to init IndexedDB:', err);
+        console.error('Failed to init database:', err);
       } finally {
         setLoading(false);
       }
@@ -113,7 +113,7 @@ export const App: React.FC = () => {
       if (res.success) {
         const refreshed = await getTickets();
         setTickets(refreshed);
-        alert(`Successfully imported ${res.count} tickets into your vault!`);
+        alert(`Successfully imported ${res.count} tickets into your vault.`);
       } else {
         alert(`Failed to import vault: ${res.error}`);
       }
@@ -210,18 +210,41 @@ export const App: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Search & Filter Bar */}
-        <SearchBar
-          filters={filters}
-          onChange={setFilters}
-          availableYears={availableYears}
-        />
+        {tickets.length > 0 && (
+          <SearchBar
+            filters={filters}
+            onChange={setFilters}
+            availableYears={availableYears}
+          />
+        )}
 
         {/* Loading Spinner */}
         {loading ? (
           <div className="py-24 flex flex-col items-center justify-center space-y-3">
-            <Film className="w-10 h-10 text-amber-500 animate-spin" />
-            <p className="text-sm font-semibold text-slate-400">Loading your cinema vault...</p>
+            <Film className="w-8 h-8 text-amber-500 animate-spin" />
+            <p className="text-xs font-semibold text-slate-400">Loading vault...</p>
+          </div>
+        ) : tickets.length === 0 ? (
+          /* Clean, pristine empty vault screen */
+          <div className="py-20 max-w-lg mx-auto text-center space-y-6">
+            <div className="w-20 h-20 rounded-3xl bg-[#121520] border border-amber-500/25 flex items-center justify-center mx-auto text-amber-400 shadow-2xl">
+              <TicketIcon className="w-10 h-10 -rotate-12 transform" />
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-black text-white tracking-tight">Your Vault is Empty</h2>
+              <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                Add your tickets from BookMyShow, PVR INOX, AMC, or Fandango to build your personal cinema archive.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all transform active:scale-95"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>Add Your First Ticket</span>
+            </button>
           </div>
         ) : (
           <>
@@ -251,41 +274,27 @@ export const App: React.FC = () => {
       </main>
 
       {/* Floating Action Button for Mobile */}
-      <div className="fixed bottom-6 right-6 z-30 sm:hidden">
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="w-14 h-14 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 flex items-center justify-center shadow-[0_0_25px_rgba(245,158,11,0.5)] active:scale-95"
-          title="Add Movie Ticket"
-        >
-          <Plus className="w-7 h-7 stroke-[2.5]" />
-        </button>
-      </div>
+      {tickets.length > 0 && (
+        <div className="fixed bottom-6 right-6 z-30 sm:hidden">
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="w-13 h-13 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-2xl active:scale-95"
+            title="Add Movie Ticket"
+          >
+            <Plus className="w-6 h-6 stroke-[2.5]" />
+          </button>
+        </div>
+      )}
 
-      {/* Sleek Cinema Dark Footer */}
+      {/* Clean Luxury Footer */}
       <footer className="w-full border-t border-slate-900 bg-[#06070a] py-6 text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-400">BucketPass</span>
-            <span>·</span>
-            <span>The 100% Free Personal Cinema Vault</span>
-          </div>
-
-          <div className="flex items-center gap-4 text-[11px]">
-            <span className="flex items-center gap-1 text-slate-400">
-              <HardDrive className="w-3.5 h-3.5 text-amber-400" />
-              <span>Zero-cost local browser storage</span>
-            </span>
-            <span className="flex items-center gap-1 text-slate-400">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>100% Private</span>
-            </span>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+          <span className="font-bold text-slate-400">BucketPass</span>
+          <span className="text-slate-500 text-[11px]">Personal Cinema Vault &amp; Diary</span>
         </div>
       </footer>
 
-      {/* ================= MODALS ================= */}
-
-      {/* 1. Pop-Open Inspection & Cinema Diary Modal */}
+      {/* Modals */}
       {selectedTicket && (
         <TicketInspectorModal
           ticket={selectedTicket}
@@ -297,14 +306,12 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* 2. Add Ticket Wizard (OCR + Lookup) Modal */}
       <AddTicketModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSaveTicket={handleSaveTicket}
       />
 
-      {/* 3. Edit Ticket Details Modal */}
       {editingTicket && (
         <EditTicketModal
           ticket={editingTicket}
@@ -314,7 +321,6 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* 4. Vault Statistics Modal */}
       <StatsModal
         isOpen={isStatsModalOpen}
         onClose={() => setIsStatsModalOpen(false)}

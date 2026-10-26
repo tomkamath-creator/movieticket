@@ -9,7 +9,6 @@ import {
   Download,
   Upload,
   BarChart3,
-  Film,
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -44,93 +43,84 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-[#090b10]/90 backdrop-blur-xl transition-all">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-[#090b10]/95 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20 gap-4">
           {/* Logo & Brand Identity */}
           <div className="flex items-center gap-3">
-            <div className="relative flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 shadow-[0_0_20px_rgba(245,158,11,0.35)] border border-amber-300/40">
-              <TicketIcon className="w-6 h-6 text-slate-950 fill-slate-950 -rotate-12 transform" />
-              <Film className="w-3.5 h-3.5 text-amber-200 absolute -bottom-1 -right-1" />
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 shadow-[0_0_20px_rgba(245,158,11,0.25)] border border-amber-300/30">
+              <TicketIcon className="w-5 h-5 text-slate-950 fill-slate-950 -rotate-12 transform" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-black tracking-tight text-white font-sans bg-clip-text text-transparent bg-gradient-to-r from-white via-amber-100 to-amber-400">
-                  BucketPass
-                </span>
-                <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                  Vault &amp; Diary
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 hidden sm:block">
-                Permanent 100% Free Personal Cinema Diary
+              <span className="text-xl font-black tracking-tight text-white font-sans">
+                BucketPass
+              </span>
+              <p className="text-[11px] text-slate-400 font-medium">
+                Personal Cinema Vault
               </p>
             </div>
           </div>
 
           {/* Three-Way View Mode Switcher */}
-          <div className="flex items-center bg-[#131622] p-1 rounded-xl border border-slate-800/80 shadow-inner">
+          <div className="flex items-center bg-[#131622] p-1 rounded-xl border border-slate-800/80">
             <button
               onClick={() => onViewChange('deck')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
                 currentView === 'deck'
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-[0_2px_10px_rgba(245,158,11,0.3)]'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
+                  : 'text-slate-400 hover:text-white'
               }`}
-              title="Swipe Deck: Browse collectible cards one by one"
             >
               <Layers className="w-4 h-4" />
-              <span className="hidden md:inline">Swipe Deck</span>
+              <span className="hidden md:inline">Deck</span>
             </button>
 
             <button
               onClick={() => onViewChange('grid')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
                 currentView === 'grid'
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-[0_2px_10px_rgba(245,158,11,0.3)]'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
+                  : 'text-slate-400 hover:text-white'
               }`}
-              title="Grid Gallery: Visual wall of ticket stubs"
             >
               <LayoutGrid className="w-4 h-4" />
-              <span className="hidden md:inline">Grid Gallery</span>
+              <span className="hidden md:inline">Gallery</span>
             </button>
 
             <button
               onClick={() => onViewChange('list')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
                 currentView === 'list'
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-[0_2px_10px_rgba(245,158,11,0.3)]'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
+                  : 'text-slate-400 hover:text-white'
               }`}
-              title="List View: Compact movie log"
             >
               <List className="w-4 h-4" />
-              <span className="hidden md:inline">List View</span>
+              <span className="hidden md:inline">Log</span>
             </button>
           </div>
 
-          {/* Action CTAs: Add Ticket, Stats, Backup */}
+          {/* Actions: Stats, Backup, Add Ticket */}
           <div className="flex items-center gap-2">
-            {/* Quick Stats Pill */}
-            <button
-              onClick={onOpenStatsModal}
-              className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 text-xs text-slate-300 transition-colors"
-              title="View Cinema Statistics"
-            >
-              <BarChart3 className="w-4 h-4 text-amber-400" />
-              <span>
-                <strong className="text-white">{totalTickets}</strong> Tickets
-              </span>
-              <span className="text-slate-600">•</span>
-              <span className="text-amber-400 font-semibold">{averageRating.toFixed(1)}★</span>
-            </button>
+            {totalTickets > 0 && (
+              <button
+                onClick={onOpenStatsModal}
+                className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs text-slate-300 transition-colors"
+              >
+                <BarChart3 className="w-4 h-4 text-amber-400" />
+                <span>
+                  <strong className="text-white">{totalTickets}</strong> Stubs
+                </span>
+                <span className="text-slate-600">•</span>
+                <span className="text-amber-400 font-semibold">{averageRating.toFixed(1)}★</span>
+              </button>
+            )}
 
             {/* Export Vault */}
             <button
               onClick={onExportVault}
               className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white transition-colors"
-              title="Export Vault (JSON backup)"
+              title="Backup Vault"
             >
               <Download className="w-4 h-4" />
             </button>
@@ -146,7 +136,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={() => fileInputRef.current?.click()}
               className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white transition-colors"
-              title="Import Vault backup"
+              title="Restore Vault"
             >
               <Upload className="w-4 h-4" />
             </button>
@@ -154,7 +144,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Add Ticket Button */}
             <button
               onClick={onOpenAddModal}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-sm shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_25px_rgba(245,158,11,0.5)] transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all transform active:scale-95"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
               <span className="hidden sm:inline">Add Ticket</span>
