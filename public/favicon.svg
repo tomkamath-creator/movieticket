@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="14" fill="#08090d"/>
+  <rect x="8" y="14" width="48" height="36" rx="6" fill="#f59e0b" stroke="#fcd34d" stroke-width="2"/>
+  <!-- ticket notches -->
+  <circle cx="8" cy="32" r="5" fill="#08090d"/>
+  <circle cx="56" cy="32" r="5" fill="#08090d"/>
+  <!-- ticket perforation line -->
+  <line x1="38" y1="14" x2="38" y2="50" stroke="#b45309" stroke-width="2" stroke-dasharray="3 3"/>
+  <!-- star icon -->
+  <polygon points="23,23 25,29 31,29 26,33 28,39 23,35 18,39 20,33 15,29 21,29" fill="#18181b"/>
+  <!-- barcode simulation -->
+  <line x1="43" y1="22" x2="43" y2="42" stroke="#18181b" stroke-width="2"/>
+  <line x1="47" y1="22" x2="47" y2="42" stroke="#18181b" stroke-width="1.5"/>
+  <line x1="50" y1="22" x2="50" y2="42" stroke="#18181b" stroke-width="3"/>
+</svg>
