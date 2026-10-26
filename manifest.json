@@ -1,0 +1,17 @@
+{
+  "name": "BucketPass — Cinema Ticket Vault & Diary",
+  "short_name": "BucketPass",
+  "description": "Your 100% free, private personal cinema ticket vault and movie diary.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#08090d",
+  "theme_color": "#08090d",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
