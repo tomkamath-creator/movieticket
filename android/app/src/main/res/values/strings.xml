@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">BucketPass</string>
+    <string name="title_activity_main">BucketPass</string>
+    <string name="package_name">com.bucketpass.app</string>
+    <string name="custom_url_scheme">com.bucketpass.app</string>
+</resources>
